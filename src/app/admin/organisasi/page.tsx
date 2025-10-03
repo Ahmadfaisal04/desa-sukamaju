@@ -236,7 +236,7 @@ export default function AdminOrganisasiPage() {
                             .join("")
                             .slice(0, 2)}
                         </span>
-                      </div>{" "}
+                      </div>
                       <div>
                         <h3 className="font-medium text-gray-900">
                           {member.name}
@@ -248,7 +248,7 @@ export default function AdminOrganisasiPage() {
                         )}
                       </div>
                     </div>
-                  </td>{" "}
+                  </td>
                   <td className="px-6 py-4">
                     <div>
                       <span className="font-medium text-gray-900">

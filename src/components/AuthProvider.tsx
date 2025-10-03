@@ -57,11 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("adminAuth", "true");
     setIsAuthenticated(true);
   };
-
   const logout = () => {
     localStorage.removeItem("adminAuth");
     setIsAuthenticated(false);
-    router.push("/admin/login");
+    router.push("/");
   };
 
   return (

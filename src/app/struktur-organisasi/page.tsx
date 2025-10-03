@@ -2,11 +2,15 @@ import { organizationData } from "@/data/organization";
 import { Mail, Phone } from "lucide-react";
 
 export default function StrukturOrganisasi() {
-  const kepalaDesa = organizationData.find(member => member.position === "Kepala Desa");
-  const perangkatDesa = organizationData.filter(member => 
-    member.position !== "Kepala Desa" && !member.position.includes("Kepala Dusun")
+  const kepalaDesa = organizationData.find(
+    (member) => member.position === "Kepala Desa"
   );
-  const kepalaDusun = organizationData.filter(member => 
+  const perangkatDesa = organizationData.filter(
+    (member) =>
+      member.position !== "Kepala Desa" &&
+      !member.position.includes("Kepala Dusun")
+  );
+  const kepalaDusun = organizationData.filter((member) =>
     member.position.includes("Kepala Dusun")
   );
 
@@ -21,7 +25,8 @@ export default function StrukturOrganisasi() {
               Struktur Organisasi
             </h1>
             <p className="text-xl lg:text-2xl text-emerald-100 leading-relaxed">
-              Mengenal para pemimpin dan perangkat desa yang mengabdi untuk kemajuan Desa Sejahtera
+              Mengenal para pemimpin dan perangkat desa yang mengabdi untuk
+              kemajuan Desa Sejahtera
             </p>
           </div>
         </div>
@@ -32,14 +37,22 @@ export default function StrukturOrganisasi() {
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl font-bold text-gray-800 mb-12">Kepala Desa</h2>
-              
+              <h2 className="text-4xl font-bold text-gray-800 mb-12">
+                Kepala Desa
+              </h2>
+
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-100 max-w-2xl mx-auto">
                 <div className="w-32 h-32 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <span className="text-emerald-700 font-semibold text-lg">Foto</span>
+                  <span className="text-emerald-700 font-semibold text-lg">
+                    Foto
+                  </span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">{kepalaDesa.name}</h3>
-                <p className="text-lg text-emerald-600 font-semibold mb-4">{kepalaDesa.position}</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  {kepalaDesa.name}
+                </h3>
+                <p className="text-lg text-emerald-600 font-semibold mb-4">
+                  {kepalaDesa.position}
+                </p>
                 <p className="text-gray-700 leading-relaxed max-w-lg mx-auto">
                   {kepalaDesa.description}
                 </p>
@@ -62,11 +75,16 @@ export default function StrukturOrganisasi() {
       {/* Perangkat Desa */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">Perangkat Desa</h2>
-          
+          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+            Perangkat Desa
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {perangkatDesa.map((member) => (
-              <div key={member.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+              <div
+                key={member.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+              >
                 <div className="aspect-square bg-gradient-to-br from-blue-200 to-purple-200 relative overflow-hidden">
                   <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
                     <span className="text-blue-700 font-semibold">Foto</span>
@@ -76,7 +94,9 @@ export default function StrukturOrganisasi() {
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
                     {member.name}
                   </h3>
-                  <p className="text-emerald-600 font-semibold mb-3">{member.position}</p>
+                  <p className="text-emerald-600 font-semibold mb-3">
+                    {member.position}
+                  </p>
                   <p className="text-gray-600 text-sm leading-relaxed mb-4">
                     {member.description}
                   </p>
@@ -98,16 +118,25 @@ export default function StrukturOrganisasi() {
       {/* Kepala Dusun */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">Kepala Dusun</h2>
-          
+          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+            Kepala Dusun
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {kepalaDusun.map((member) => (
-              <div key={member.id} className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100 text-center hover:shadow-lg transition-shadow duration-300">
+              <div
+                key={member.id}
+                className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100 text-center hover:shadow-lg transition-shadow duration-300"
+              >
                 <div className="w-24 h-24 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
                   <span className="text-emerald-700 font-semibold">Foto</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{member.name}</h3>
-                <p className="text-emerald-600 font-semibold mb-3">{member.position}</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  {member.name}
+                </h3>
+                <p className="text-emerald-600 font-semibold mb-3">
+                  {member.position}
+                </p>
                 <p className="text-gray-700 text-sm leading-relaxed mb-4">
                   {member.description}
                 </p>
@@ -128,8 +157,10 @@ export default function StrukturOrganisasi() {
       {/* Organizational Chart */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">Bagan Organisasi</h2>
-          
+          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+            Bagan Organisasi
+          </h2>
+
           <div className="max-w-6xl mx-auto">
             <div className="bg-white rounded-xl shadow-lg p-8 overflow-x-auto">
               <div className="min-w-[800px]">
@@ -137,7 +168,9 @@ export default function StrukturOrganisasi() {
                 <div className="text-center mb-8">
                   <div className="inline-block bg-emerald-100 border-2 border-emerald-500 rounded-lg p-4 max-w-xs">
                     <h3 className="font-bold text-emerald-700">Kepala Desa</h3>
-                    <p className="text-sm text-emerald-600">{kepalaDesa?.name}</p>
+                    <p className="text-sm text-emerald-600">
+                      {kepalaDesa?.name}
+                    </p>
                   </div>
                 </div>
 
@@ -151,7 +184,9 @@ export default function StrukturOrganisasi() {
                   {perangkatDesa.map((member) => (
                     <div key={member.id} className="text-center">
                       <div className="bg-blue-100 border-2 border-blue-500 rounded-lg p-3">
-                        <h4 className="font-semibold text-blue-700 text-sm">{member.position}</h4>
+                        <h4 className="font-semibold text-blue-700 text-sm">
+                          {member.position}
+                        </h4>
                         <p className="text-xs text-blue-600">{member.name}</p>
                       </div>
                     </div>
@@ -168,51 +203,16 @@ export default function StrukturOrganisasi() {
                   {kepalaDusun.map((member) => (
                     <div key={member.id} className="text-center">
                       <div className="bg-purple-100 border-2 border-purple-500 rounded-lg p-3">
-                        <h4 className="font-semibold text-purple-700 text-sm">{member.position}</h4>
+                        <h4 className="font-semibold text-purple-700 text-sm">
+                          {member.position}
+                        </h4>
                         <p className="text-xs text-purple-600">{member.name}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Information */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-8">Kontak Pemerintahan Desa</h2>
-            
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Mail className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Email</h3>
-                  <p className="text-gray-600">info@desasejahtera.id</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Phone className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Telepon</h3>
-                  <p className="text-gray-600">(021) 1234-5678</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Mail className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Alamat</h3>
-                  <p className="text-gray-600">Jl. Raya Desa No. 123<br />Kecamatan Sejahtera</p>
-                </div>
-              </div>
-            </div>
+            </div>{" "}
           </div>
         </div>
       </section>

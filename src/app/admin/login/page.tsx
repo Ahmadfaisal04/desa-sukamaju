@@ -174,7 +174,7 @@ export default function AdminLoginPage() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-gray-500 text-sm">
-            © 2024 Desa Sukamaju. Semua hak cipta dilindungi.
+            © 2025 Desa Suka Maju • Created with ❤️ by pusatweb.
           </p>
         </div>
       </div>

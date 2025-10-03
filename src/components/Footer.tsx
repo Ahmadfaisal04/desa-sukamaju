@@ -130,7 +130,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2024 Desa Sukamaju. Semua hak cipta dilindungi undang-undang.
+            © 2025 Desa Suka Maju • Created with ❤️ by pusatweb.
           </p>
         </div>
       </div>

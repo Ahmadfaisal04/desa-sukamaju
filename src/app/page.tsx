@@ -1,10 +1,117 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapPin, Users, Building, Calendar, ChevronRight } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import {
+  ArrowRight,
+  MapPin,
+  Users,
+  Building,
+  Calendar,
+  ChevronRight,
+} from "lucide-react";
 import { newsData } from "@/data/news";
+
+// Hook untuk animasi countup
+const useCountUp = (
+  end: number,
+  duration: number = 2000,
+  startAnimation: boolean = false
+) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!startAnimation) return;
+
+    let startTime: number;
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      // Easing function untuk animasi yang smooth
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(end * easeOutQuart));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [end, duration, startAnimation]);
+
+  return count;
+};
+
+// Komponen StatCard dengan animasi countup
+const StatCard = ({
+  icon: Icon,
+  value,
+  label,
+  color,
+  bgColor,
+  borderColor,
+  startAnimation,
+}: {
+  icon: any;
+  value: number;
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  startAnimation: boolean;
+}) => {
+  const animatedValue = useCountUp(value, 2000, startAnimation);
+
+  return (
+    <div
+      className={`text-center p-6 rounded-xl bg-gradient-to-br ${bgColor} border ${borderColor} transform hover:scale-105 transition-transform duration-300`}
+    >
+      <div
+        className={`w-16 h-16 ${color} rounded-full mx-auto mb-4 flex items-center justify-center`}
+      >
+        <Icon className="w-8 h-8 text-white" />
+      </div>
+      <h3
+        className={`text-3xl font-bold ${color.replace("bg-", "text-")} mb-2`}
+      >
+        {animatedValue.toLocaleString("id-ID")}
+      </h3>
+      <p className="text-gray-600">{label}</p>
+    </div>
+  );
+};
 
 export default function Home() {
   const latestNews = newsData.slice(0, 3);
+  const [startStatsAnimation, setStartStatsAnimation] = useState(false);
+  const statsRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !startStatsAnimation) {
+            setStartStatsAnimation(true);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => {
+      if (statsRef.current) {
+        observer.unobserve(statsRef.current);
+      }
+    };
+  }, [startStatsAnimation]);
 
   return (
     <div className="bg-gray-50">
@@ -19,17 +126,18 @@ export default function Home() {
                 <span className="block text-emerald-200">Desa Sukamaju</span>
               </h1>
               <p className="text-xl lg:text-2xl mb-8 text-emerald-100 leading-relaxed">
-                Desa yang maju, mandiri, dan sejahtera bagi semua warga masyarakat
+                Desa yang maju, mandiri, dan sejahtera bagi semua warga
+                masyarakat
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link 
+                <Link
                   href="/tentang"
                   className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-all duration-300 flex items-center justify-center space-x-2 group"
                 >
                   <span>Tentang Desa</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
-                <Link 
+                <Link
                   href="/berita"
                   className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-emerald-600 transition-all duration-300 flex items-center justify-center space-x-2 group"
                 >
@@ -59,66 +167,92 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
-
+      </section>{" "}
       {/* Quick Stats */}
-      <section className="py-16 bg-white">
+      <section ref={statsRef} className="py-16 bg-white">
         <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              Data Statistik Desa
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Informasi terkini mengenai demografi dan administrasi Desa
+              Sukamaju
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
-              <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-emerald-600 mb-2">5.432</h3>
-              <p className="text-gray-600">Total Penduduk</p>
-            </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-              <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Building className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-blue-600 mb-2">1.654</h3>
-              <p className="text-gray-600">Kepala Keluarga</p>
-            </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
-              <div className="w-16 h-16 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-purple-600 mb-2">3</h3>
-              <p className="text-gray-600">Dusun</p>
-            </div>
-            <div className="text-center p-6 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 border border-orange-100">
-              <div className="w-16 h-16 bg-orange-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Calendar className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-orange-600 mb-2">24</h3>
-              <p className="text-gray-600">Rukun Tetangga</p>
-            </div>
+            <StatCard
+              icon={Users}
+              value={5432}
+              label="Total Penduduk"
+              color="bg-emerald-600"
+              bgColor="from-emerald-50 to-teal-50"
+              borderColor="border-emerald-100"
+              startAnimation={startStatsAnimation}
+            />
+            <StatCard
+              icon={Building}
+              value={1654}
+              label="Kepala Keluarga"
+              color="bg-blue-600"
+              bgColor="from-blue-50 to-indigo-50"
+              borderColor="border-blue-100"
+              startAnimation={startStatsAnimation}
+            />
+            <StatCard
+              icon={MapPin}
+              value={3}
+              label="Dusun"
+              color="bg-purple-600"
+              bgColor="from-purple-50 to-pink-50"
+              borderColor="border-purple-100"
+              startAnimation={startStatsAnimation}
+            />
+            <StatCard
+              icon={Calendar}
+              value={24}
+              label="Rukun Tetangga"
+              color="bg-orange-600"
+              bgColor="from-orange-50 to-red-50"
+              borderColor="border-orange-100"
+              startAnimation={startStatsAnimation}
+            />
           </div>
         </div>
       </section>
-
       {/* Latest News */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">Berita Terkini</h2>
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              Berita Terkini
+            </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Dapatkan informasi terbaru seputar kegiatan dan perkembangan di Desa Sukamaju
+              Dapatkan informasi terbaru seputar kegiatan dan perkembangan di
+              Desa Sukamaju
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {latestNews.map((news, index) => (
-              <div key={news.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+              <div
+                key={news.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+              >
                 <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 relative overflow-hidden">
                   <div className="absolute inset-0 bg-emerald-600/20 flex items-center justify-center">
-                    <span className="text-emerald-700 font-semibold">Foto Berita {index + 1}</span>
+                    <span className="text-emerald-700 font-semibold">
+                      Foto Berita {index + 1}
+                    </span>
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                     <Calendar className="w-4 h-4" />
-                    <span>{new Date(news.date).toLocaleDateString('id-ID')}</span>
+                    <span>
+                      {new Date(news.date).toLocaleDateString("id-ID")}
+                    </span>
                     <span>•</span>
                     <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
                       {news.category}
@@ -130,7 +264,7 @@ export default function Home() {
                   <p className="text-gray-600 mb-4 line-clamp-3">
                     {news.excerpt}
                   </p>
-                  <Link 
+                  <Link
                     href={`/berita/${news.id}`}
                     className="inline-flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 font-medium group"
                   >
@@ -143,7 +277,7 @@ export default function Home() {
           </div>
 
           <div className="text-center">
-            <Link 
+            <Link
               href="/berita"
               className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-300"
             >
@@ -153,51 +287,71 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Vision Mission */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-8">Visi & Misi Desa</h2>
-              
+              <h2 className="text-4xl font-bold text-gray-800 mb-8">
+                Visi & Misi Desa
+              </h2>
+
               <div className="mb-8">
-                <h3 className="text-2xl font-semibold text-emerald-600 mb-4">Visi</h3>
+                <h3 className="text-2xl font-semibold text-emerald-600 mb-4">
+                  Visi
+                </h3>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera berdasarkan gotong royong dan kearifan lokal"
+                  "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera
+                  berdasarkan gotong royong dan kearifan lokal"
                 </p>
               </div>
 
               <div>
-                <h3 className="text-2xl font-semibold text-emerald-600 mb-4">Misi</h3>
+                <h3 className="text-2xl font-semibold text-emerald-600 mb-4">
+                  Misi
+                </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">Meningkatkan kualitas pelayanan publik yang prima</span>
+                    <span className="text-gray-700">
+                      Meningkatkan kualitas pelayanan publik yang prima
+                    </span>
                   </li>
                   <li className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">Mengembangkan potensi ekonomi desa berbasis kearifan lokal</span>
+                    <span className="text-gray-700">
+                      Mengembangkan potensi ekonomi desa berbasis kearifan lokal
+                    </span>
                   </li>
                   <li className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">Memperkuat persatuan dan kesatuan masyarakat</span>
+                    <span className="text-gray-700">
+                      Memperkuat persatuan dan kesatuan masyarakat
+                    </span>
                   </li>
                   <li className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">Melestarikan budaya dan tradisi lokal</span>
+                    <span className="text-gray-700">
+                      Melestarikan budaya dan tradisi lokal
+                    </span>
                   </li>
                 </ul>
               </div>
-            </div>
-
+            </div>{" "}
             <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center">
+              <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center p-8">
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-emerald-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <span className="text-white text-4xl font-bold">DS</span>
+                  <div className="w-48 h-48 relative mx-auto mb-6">
+                    <Image
+                      src="/logo.png"
+                      alt="Logo Desa Sukamaju"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-emerald-700">Desa Sukamaju</h3>
+                  <h3 className="text-2xl font-bold text-emerald-700">
+                    Desa Sukamaju
+                  </h3>
                   <p className="text-emerald-600 font-medium">Maju Bersama</p>
                 </div>
               </div>
