@@ -29,7 +29,6 @@ const adminMenuItems = [
 ];
 
 const settingsMenuItems = [
-  { href: "/admin/pengaturan?tab=umum", label: "Umum", icon: Globe },
   { href: "/admin/pengaturan?tab=kontak", label: "Kontak", icon: Phone },
   { href: "/admin/pengaturan?tab=privacy", label: "Privacy", icon: Shield },
 ];
@@ -48,7 +47,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Get current tab from URL params, with fallback
-  const currentTab = mounted ? (searchParams.get('tab') || 'umum') : 'umum';
+  const currentTab = mounted ? (searchParams.get('tab') || 'kontak') : 'kontak';
 
   // Show loading spinner while checking authentication
   if (isLoading) {

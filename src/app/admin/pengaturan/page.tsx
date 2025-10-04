@@ -1,6 +1,9 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable  const [contentId, setContentId] = useState<string | null>(null);
+  const [contactId, setContactId] = useState<string | null>(null);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [isLoadingContact, setIsLoadingContact] = useState(false);typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect, useRef } from "react";
@@ -19,7 +22,7 @@ import {
 export default function AdminPengaturanPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("umum");
+  const [activeTab, setActiveTab] = useState("kontak");
   const [settings, setSettings] = useState({
     siteName: "Desa Sukamaju",
     contactEmail: "info@desasukamaju.id",
@@ -30,6 +33,13 @@ export default function AdminPengaturanPage() {
     logoUrl: "/logo.png",
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [contentId, setContentId] = useState<string | null>(null);
+  const [contactId, setContactId] = useState<string | null>(null);
+  const [isLoadingContent, setIsLoadingContent] = useState(true);
+  const [isLoadingContact, setIsLoadingContact] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Admin data state
   const [adminData, setAdminData] = useState({
@@ -60,7 +70,7 @@ export default function AdminPengaturanPage() {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['umum', 'kontak', 'privacy'].includes(tab)) {
+    if (tab && ['kontak', 'privacy'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -70,16 +80,20 @@ export default function AdminPengaturanPage() {
     fetchAdminData();
   }, []);
 
-  // Function to decode JWT token and get admin ID from claims
-  // Function to logout and redirect to login page
+  // Fetch data based on active tab
+  useEffect(() => {
+    if (activeTab === 'kontak') {
+      fetchContactData();
+    }
+    // Note: fetchContentData is only needed if you have a content/general settings tab
+    // For now, we don't fetch it to avoid unnecessary API calls
+  }, [activeTab]);
+
   const handleLogout = () => {
-    // Clear all tokens from localStorage
     localStorage.removeItem('adminToken');
-    localStorage.removeItem('authToken');
     localStorage.removeItem('adminAuth');
-    
-    // Redirect to login page
-    router.push('/admin/login');
+
+    window.location.reload();
   };
 
   const getAdminIdFromToken = (token: string): string | null => {
@@ -108,6 +122,141 @@ export default function AdminPengaturanPage() {
     } catch (error) {
       console.error('Error decoding JWT token:', error);
       return null;
+    }
+  };
+
+  const fetchContactData = async () => {
+    try {
+      setIsLoadingContact(true);
+      // Use default contact ID - you can modify this based on your needs
+      const defaultContactId = 'b094eab0-a132-11f0-b34c-482ae3455d6d';
+      setContactId(defaultContactId);
+      
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('Token not found');
+        setIsLoadingContact(false);
+        return;
+      }
+
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/${defaultContactId}`;
+      console.log('Fetching contact data from:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Handle the response structure: { code: 200, status: "OK", data: {...}, message: "..." }
+        if (result.code === 200 && result.data) {
+          const contact = result.data;
+          
+          // Update settings with data from API
+          setSettings(prev => ({
+            ...prev,
+            contactEmail: contact.email || prev.contactEmail,
+            contactPhone: contact.telepon || prev.contactPhone,
+            facebookUrl: contact.facebook || prev.facebookUrl,
+            instagramUrl: contact.instagram || prev.instagramUrl,
+            youtubeUrl: contact.youtube || prev.youtubeUrl,
+          }));
+          
+          console.log('Contact data loaded successfully:', result.message);
+        } else {
+          console.error('API returned error:', result.message || 'Unknown error');
+          // Use default data if API fails
+          console.log('Using default contact data');
+        }
+      } else {
+        console.error('Failed to fetch contact data:', response.status, response.statusText);
+        // Use default data if API fails  
+        console.log('Using default contact data due to API error');
+      }
+    } catch (error) {
+      console.error('Error fetching contact data:', error);
+      // Use default data if API fails
+      console.log('Using default contact data due to network error');
+    } finally {
+      setIsLoadingContact(false);
+    }
+  };
+
+  const fetchContentData = async () => {
+    try {
+      setIsLoadingContent(true);
+      // For now, we'll use a default content ID. You can modify this to get the actual content ID
+      // This could come from URL params, settings, or a default content endpoint
+      const defaultContentId = '44e2d11b-a11b-11f0-b34c-482ae3455d6d'; // Use the actual content ID from your API
+      setContentId(defaultContentId);
+      
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('Token not found');
+        setIsLoadingContent(false);
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/konten/${defaultContentId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Handle the response structure: { code: 200, status: "OK", data: {...}, message: "..." }
+        if (result.code === 200 && result.data) {
+          const content = result.data;
+          
+          // Update settings with data from API
+          // Add cache busting timestamp to logo URL to force reload
+          const logoUrl = content.logo 
+            ? `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/uploads/${content.logo}?v=${Date.now()}` 
+            : '/logo.png';
+            
+          setSettings(prev => ({
+            ...prev,
+            siteName: content.nama_website || prev.siteName,
+            logoUrl: logoUrl,
+            // Add other fields as needed based on your API response
+          }));
+          
+          // Set content ID from response
+          setContentId(content.id_konten);
+          
+          // Reset preview mode when loading from API
+          setIsPreviewMode(false);
+          setLogoFile(null);
+          // Clear preview URL if exists
+          if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+          }
+          
+          console.log('Content data loaded successfully:', result.message);
+        } else {
+          console.warn('API returned error for content data:', result.message || 'Unknown error');
+          // Use default content data if API fails
+          console.log('Using default content data');
+        }
+      } else {
+        console.warn('Content API endpoint not available (Status:', response.status, '). Using default data.');
+        // Don't show error for 404 - just use default data
+      }
+    } catch (error) {
+      console.warn('Content API not available:', error instanceof Error ? error.message : 'Unknown error');
+      console.log('Using default content data - this is normal if the content API is not implemented yet');
+    } finally {
+      setIsLoadingContent(false);
     }
   };
 
@@ -324,16 +473,183 @@ export default function AdminPengaturanPage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Format file tidak didukung. Gunakan JPG, PNG, atau SVG.');
+        return;
+      }
+      
+      // Validate file size (max 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (file.size > maxSize) {
+        alert('Ukuran file terlalu besar. Maksimal 2MB.');
+        return;
+      }
+      
+      // Clean up previous preview URL
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      
       setLogoFile(file);
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      handleInputChange("logoUrl", previewUrl);
+      setIsPreviewMode(true);
+      // Create new preview URL
+      const newPreviewUrl = URL.createObjectURL(file);
+      setPreviewUrl(newPreviewUrl);
     }
   };
 
-  const handleSave = () => {
-    // Simulate saving settings
-    alert("Pengaturan berhasil disimpan!");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        alert('Sesi telah berakhir. Silakan login kembali.');
+        return;
+      }
+
+      // Handle different tabs
+      if (activeTab === 'kontak') {
+        return await handleSaveContact(token);
+      } else {
+        // Handle other tabs (content data)
+        if (!contentId) {
+          alert('Content ID tidak ditemukan. Silakan refresh halaman.');
+          return;
+        }
+        return await handleSaveContent(token);
+      }
+    } catch (error) {
+      console.error('Error saving data:', error);
+      alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveContact = async (token: string) => {
+    if (!contactId) {
+      alert('Contact ID tidak ditemukan. Silakan refresh halaman.');
+      return;
+    }
+
+    try {
+      const contactData = {
+        email: settings.contactEmail,
+        telepon: settings.contactPhone,
+        facebook: settings.facebookUrl,
+        instagram: settings.instagramUrl,
+        youtube: settings.youtubeUrl,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.code === 200) {
+        alert(result.message || 'Berhasil memperbarui data kontak');
+        // Refresh contact data to get updated information from server
+        await fetchContactData();
+      } else {
+        alert(result.message || 'Gagal memperbarui data kontak. Silakan coba lagi.');
+      }
+    } catch (error) {
+      console.error('Error saving contact:', error);
+      alert('Terjadi kesalahan saat menyimpan data kontak.');
+    }
+  };
+
+  const handleSaveContent = async (token: string) => {
+    if (!contentId) {
+      alert('Content ID tidak ditemukan. Silakan refresh halaman.');
+      return;
+    }
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('nama_website', settings.siteName);
+      
+      // If a new logo file was selected, use it
+      if (logoFile && logoFile instanceof File) {
+        formData.append('logo', logoFile);
+      } else {
+        // If no new logo selected, fetch the current logo and send it
+        try {
+          // Extract filename from current logoUrl
+          const currentLogoUrl = settings.logoUrl;
+          let logoFileName = 'logo.png'; // default fallback
+          
+          if (currentLogoUrl.includes('/uploads/')) {
+            // Extract filename from URL like: http://localhost:8080/uploads/logo.png?v=123456
+            const urlParts = currentLogoUrl.split('/uploads/')[1];
+            logoFileName = urlParts.split('?')[0]; // Remove query parameters
+          }
+          
+          // Fetch the current logo file
+          const logoResponse = await fetch(currentLogoUrl);
+          if (logoResponse.ok) {
+            const logoBlob = await logoResponse.blob();
+            // Create a File object from the blob
+            const logoFileFromUrl = new File([logoBlob], logoFileName, { type: logoBlob.type });
+            formData.append('logo', logoFileFromUrl);
+          } else {
+            console.warn('Could not fetch current logo, proceeding without logo update');
+          }
+        } catch (logoError) {
+          console.warn('Error fetching current logo:', logoError);
+          // Continue without logo if fetch fails
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/konten/${contentId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type for FormData, let the browser set it
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      // Handle the response structure: { code: 200, status: "OK", message: "berhasil memperbarui data konten" }
+      if (response.ok && result.code === 200) {
+        alert(result.message || 'Berhasil memperbarui data konten');
+        
+        // Clear the logo file state and preview mode since it's now saved
+        setLogoFile(null);
+        setIsPreviewMode(false);
+        
+        // Clean up preview URL
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
+        
+        // Clear file input
+        const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        
+        // Refresh content data to get updated information from server
+        await fetchContentData();
+      } else {
+        alert(result.message || 'Gagal memperbarui data konten. Silakan coba lagi.');
+      }
+    } catch (error) {
+      console.error('Error saving content:', error);
+      alert('Terjadi kesalahan saat menyimpan data konten.');
+    }
   };
 
   return (
@@ -349,13 +665,25 @@ export default function AdminPengaturanPage() {
               Kelola konfigurasi dan pengaturan website Desa Sukamaju
             </p>
           </div>
-          <button
-            onClick={handleSave}
-            className="inline-flex items-center justify-center space-x-2 bg-emerald-600 text-white px-8 py-3 rounded-xl hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
-          >
-            <Save className="w-5 h-5" />
-            <span>Simpan Pengaturan</span>
-          </button>
+          {activeTab !== 'privacy' && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving || (activeTab === 'kontak' ? isLoadingContact : false)}
+              className="inline-flex items-center justify-center space-x-2 bg-emerald-600 text-white px-8 py-3 rounded-xl hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Simpan Pengaturan</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -365,9 +693,7 @@ export default function AdminPengaturanPage() {
         <div className="bg-gray-50 border-b border-gray-200 px-8 py-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-              {activeTab === "umum" ? (
-                <ImageIcon className="w-5 h-5 text-emerald-600" />
-              ) : activeTab === "kontak" ? (
+              {activeTab === "kontak" ? (
                 <ImageIcon className="w-5 h-5 text-emerald-600" />
               ) : (
                 <Shield className="w-5 h-5 text-emerald-600" />
@@ -375,12 +701,10 @@ export default function AdminPengaturanPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                {activeTab === "umum" ? "Pengaturan Umum" : activeTab === "kontak" ? "Pengaturan Kontak" : "Pengaturan Privacy"}
+                {activeTab === "kontak" ? "Pengaturan Kontak" : "Pengaturan Privacy"}
               </h2>
               <p className="text-sm text-gray-500">
-                {activeTab === "umum" 
-                  ? "Kelola informasi dasar website Anda" 
-                  : activeTab === "kontak"
+                {activeTab === "kontak"
                   ? "Kelola informasi kontak dan media sosial"
                   : "Kelola keamanan akun admin Anda"
                 }
@@ -390,97 +714,20 @@ export default function AdminPengaturanPage() {
         </div>
         
         {/* Tab Content */}
-        <div className="p-8">{/* Umum Tab */}
-              {activeTab === "umum" && (
-                <div className="max-w-4xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Nama Website */}
-                    <div className="lg:col-span-1">
-                      <div className="bg-gray-50 rounded-xl p-6 h-full">
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
-                          Nama Website
-                        </label>
-                        <input
-                          type="text"
-                          value={settings.siteName}
-                          onChange={(e) =>
-                            handleInputChange("siteName", e.target.value)
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 text-lg font-medium"
-                          placeholder="Masukkan nama website..."
-                        />
-                        <p className="text-xs text-gray-500 mt-2">
-                          Nama ini akan muncul di header dan title website
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Logo Website */}
-                    <div className="lg:col-span-1">
-                      <div className="bg-gray-50 rounded-xl p-6 h-full">
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
-                          Logo Website
-                        </label>
-                        
-                        {/* Logo Preview */}
-                        <div className="mb-4">
-                          <div className="flex items-center space-x-4 p-4 bg-white rounded-xl border border-gray-200">
-                            <div className="w-16 h-16 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-100 flex items-center justify-center overflow-hidden">
-                              <img 
-                                src={settings.logoUrl} 
-                                alt="Logo Preview" 
-                                className="w-full h-full object-contain"
-                                onError={(e) => {
-                                  const target = e.currentTarget as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const nextSibling = target.nextElementSibling as HTMLElement;
-                                  if (nextSibling) {
-                                    nextSibling.classList.remove('hidden');
-                                  }
-                                }}
-                              />
-                              <ImageIcon className="w-8 h-8 text-emerald-400 hidden" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900">Logo saat ini</p>
-                              <p className="text-sm text-gray-500">
-                                {logoFile ? logoFile.name : 'logo.png'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* File Upload */}
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id="logo-upload"
-                            accept="image/*"
-                            onChange={handleLogoChange}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="logo-upload"
-                            className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-emerald-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-all duration-200 group"
-                          >
-                            <div className="text-center">
-                              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-200 transition-colors duration-200">
-                                <Upload className="w-6 h-6 text-emerald-600" />
-                              </div>
-                              <p className="text-sm font-semibold text-gray-700 mb-1">
-                                Klik untuk memilih logo baru
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                PNG, JPG, atau SVG (maksimal 2MB)
-                              </p>
-                            </div>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+        <div className="p-8">
+          {/* Show loading only for contact tab when contact data is loading */}
+          {activeTab === "kontak" && isLoadingContact ? (
+            <div className="max-w-4xl mx-auto">
+              <div className="animate-pulse">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="bg-gray-200 rounded-xl h-48"></div>
+                  <div className="bg-gray-200 rounded-xl h-48"></div>
                 </div>
-              )}
+              </div>
+            </div>
+          ) : (
+            <>
+
 
           {/* Kontak Tab */}
           {activeTab === "kontak" && (
@@ -823,6 +1070,8 @@ export default function AdminPengaturanPage() {
                 </div>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </div>
