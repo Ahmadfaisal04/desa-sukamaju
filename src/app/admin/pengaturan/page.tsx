@@ -4,171 +4,321 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Save,
   Upload,
   Image as ImageIcon,
-  MapPin,
-  Target,
-  Navigation,
+  Shield,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
-// Google Maps type declarations
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+
 
 export default function AdminPengaturanPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("umum");
   const [settings, setSettings] = useState({
     siteName: "Desa Sukamaju",
     contactEmail: "info@desasukamaju.id",
     contactPhone: "(021) 1234-5678",
-    address:
-      "Jl. Raya Desa No. 123, Kecamatan Sukamaju, Kabupaten Makmur 12345",
     facebookUrl: "",
     instagramUrl: "",
     youtubeUrl: "",
-    mapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d646.260079640575!2d119.3818133405465!3d-1.8336358952405705!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2d8d0b3807183ae9%3A0xb115727f48569d64!2sKantor%20Desa%20Suka%20Maju!5e1!3m2!1sid!2sid!4v1759500799882!5m2!1sid!2sid",
-    latitude: -1.8336358952405705,
-    longitude: 119.3818133405465,
     logoUrl: "/logo.png",
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
+  
+  // Admin data state
+  const [adminData, setAdminData] = useState({
+    id: "",
+    username: "",
+    nama: "",
+    email: "",
+    role: "",
+  });
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(true);
+  const [adminDataError, setAdminDataError] = useState(false);
+  
+  // Privacy settings state
+  const [privacySettings, setPrivacySettings] = useState({
+    currentUsername: "",
+    newUsername: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['umum', 'kontak'].includes(tab)) {
+    if (tab && ['umum', 'kontak', 'privacy'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
 
-  // Load Google Maps API
+  // Fetch admin data on component mount
   useEffect(() => {
-    const loadGoogleMapsAPI = () => {
-      if (window.google && window.google.maps) {
-        setIsMapLoaded(true);
+    fetchAdminData();
+  }, []);
+
+  // Function to decode JWT token and get admin ID from claims
+  // Function to logout and redirect to login page
+  const handleLogout = () => {
+    // Clear all tokens from localStorage
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('adminAuth');
+    
+    // Redirect to login page
+    router.push('/admin/login');
+  };
+
+  const getAdminIdFromToken = (token: string): string | null => {
+    try {
+      // JWT token has 3 parts separated by dots
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.error('Invalid JWT token format');
+        return null;
+      }
+
+      // Decode the payload (second part)
+      const payload = parts[1];
+      
+      // Add padding if needed for base64 decoding
+      const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+      
+      // Decode base64
+      const decodedPayload = atob(paddedPayload);
+      
+      // Parse JSON
+      const claims = JSON.parse(decodedPayload);
+      
+      // Return admin ID from claims (adjust the property name based on your JWT structure)
+      return claims.id || claims.adminId || claims.admin_id || claims.sub || null;
+    } catch (error) {
+      console.error('Error decoding JWT token:', error);
+      return null;
+    }
+  };
+
+  const fetchAdminData = async () => {
+    try {
+      setAdminDataError(false);
+      // Get auth token from localStorage
+      const token = localStorage.getItem('adminToken');
+      
+      if (!token) {
+        console.error('Token not found');
+        setAdminDataError(true);
+        setIsLoadingAdmin(false);
         return;
       }
 
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY_HERE'}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsMapLoaded(true);
-      };
-      script.onerror = () => {
-        console.warn('Failed to load Google Maps API');
-      };
-      document.head.appendChild(script);
-    };
-
-    if (activeTab === "kontak") {
-      loadGoogleMapsAPI();
-    }
-  }, [activeTab]);
-
-  // Initialize map when loaded
-  useEffect(() => {
-    if (isMapLoaded && mapRef.current && !mapInstanceRef.current && activeTab === "kontak") {
-      try {
-        const map = new window.google.maps.Map(mapRef.current, {
-          center: { lat: settings.latitude, lng: settings.longitude },
-          zoom: 15,
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
-        });
-
-        const marker = new window.google.maps.Marker({
-          position: { lat: settings.latitude, lng: settings.longitude },
-          map: map,
-          draggable: true,
-          title: "Lokasi Kantor Desa",
-        });
-
-        // Listen for marker drag
-        marker.addListener("dragend", () => {
-          const position = marker.getPosition();
-          const lat = position.lat();
-          const lng = position.lng();
-          
-          setSettings(prev => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng,
-            mapsEmbedUrl: generateEmbedUrl(lat, lng)
-          }));
-        });
-
-        // Listen for map click
-        map.addListener("click", (event: any) => {
-          const lat = event.latLng.lat();
-          const lng = event.latLng.lng();
-          
-          marker.setPosition(event.latLng);
-          setSettings(prev => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng,
-            mapsEmbedUrl: generateEmbedUrl(lat, lng)
-          }));
-        });
-
-        mapInstanceRef.current = map;
-        markerRef.current = marker;
-      } catch (error) {
-        console.error('Error initializing Google Maps:', error);
+      // Get admin ID from JWT claims
+      const adminId = getAdminIdFromToken(token);
+      
+      if (!adminId) {
+        console.error('Admin ID not found in JWT token');
+        setAdminDataError(true);
+        setIsLoadingAdmin(false);
+        return;
       }
-    }
-  }, [isMapLoaded, settings.latitude, settings.longitude, activeTab]);
 
-  const generateEmbedUrl = (lat: number, lng: number) => {
-    return `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${Math.abs(lat).toFixed(6)}!5e0!3m2!1sid!2sid!4v${Date.now()}!5m2!1sid!2sid`;
-  };
-
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          // Update map center and marker
-          mapInstanceRef.current?.setCenter({ lat, lng });
-          markerRef.current?.setPosition({ lat, lng });
-
-          // Update settings
-          setSettings(prev => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng,
-            mapsEmbedUrl: generateEmbedUrl(lat, lng)
-          }));
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/admin/${adminId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        () => {
-          alert("Tidak dapat mengakses lokasi Anda. Pastikan izin lokasi diaktifkan.");
-        }
-      );
-    } else {
-      alert("Geolocation tidak didukung oleh browser ini.");
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Assuming the API returns admin data in data.data
+        const admin = data.data || data;
+        
+        setAdminData({
+          id: admin.id || adminId,
+          username: admin.username || "",
+          nama: admin.nama || admin.name || "",
+          email: admin.email || "",
+          role: admin.role || "Admin",
+        });
+        
+        // Update privacy settings with current username
+        setPrivacySettings(prev => ({
+          ...prev,
+          currentUsername: admin.username || "",
+        }));
+      } else {
+        console.error('Failed to fetch admin data:', response.statusText);
+        setAdminDataError(true);
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      setAdminDataError(true);
+    } finally {
+      setIsLoadingAdmin(false);
     }
   };
+
+
 
   const handleInputChange = (key: string, value: string | boolean) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
+  };
+
+  const handlePrivacyInputChange = (key: string, value: string) => {
+    setPrivacySettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const handlePasswordChange = async () => {
+    if (privacySettings.newPassword !== privacySettings.confirmPassword) {
+      alert("Password baru dan konfirmasi password tidak cocok!");
+      return;
+    }
+    if (privacySettings.newPassword.length < 6) {
+      alert("Password baru minimal 6 karakter!");
+      return;
+    }
+    if (!privacySettings.currentPassword.trim()) {
+      alert("Password saat ini harus diisi!");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        alert("Sesi telah berakhir. Silakan login kembali.");
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/admin/${adminData.username || privacySettings.currentUsername}/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          old_password: privacySettings.currentPassword,
+          password: privacySettings.newPassword,
+          konfirmasi_password: privacySettings.confirmPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.code === 200) {
+        alert(data.message || "Password berhasil diubah! Anda akan dialihkan ke halaman login.");
+        // Clear password fields after successful update
+        setPrivacySettings(prev => ({
+          ...prev,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        }));
+        
+        // Logout after successful password change
+        setTimeout(() => {
+          handleLogout();
+        }, 1000);
+      } else {
+        alert(data.message || "Gagal mengubah password. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      alert("Terjadi kesalahan saat mengubah password. Silakan coba lagi.");
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleUsernameChange = async () => {
+    if (!privacySettings.newUsername.trim()) {
+      alert("Username baru tidak boleh kosong!");
+      return;
+    }
+    if (privacySettings.newUsername.length < 3) {
+      alert("Username minimal 3 karakter!");
+      return;
+    }
+
+    setIsUpdatingUsername(true);
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        alert("Sesi telah berakhir. Silakan login kembali.");
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/admin/${adminData.username || privacySettings.currentUsername}/username`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: privacySettings.newUsername
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.code === 200) {
+        alert(data.message || "Username berhasil diubah! Anda akan dialihkan ke halaman login.");
+        
+        // Update local state
+        setPrivacySettings(prev => ({
+          ...prev,
+          currentUsername: prev.newUsername,
+          newUsername: "",
+        }));
+        
+        // Update admin data
+        setAdminData(prev => ({
+          ...prev,
+          username: privacySettings.newUsername,
+        }));
+        
+        // Logout after successful username change
+        setTimeout(() => {
+          handleLogout();
+        }, 1000);
+      } else {
+        alert(data.message || "Gagal mengubah username. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error('Error updating username:', error);
+      alert("Terjadi kesalahan saat mengubah username. Silakan coba lagi.");
+    } finally {
+      setIsUpdatingUsername(false);
+    }
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,18 +367,22 @@ export default function AdminPengaturanPage() {
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
               {activeTab === "umum" ? (
                 <ImageIcon className="w-5 h-5 text-emerald-600" />
+              ) : activeTab === "kontak" ? (
+                <ImageIcon className="w-5 h-5 text-emerald-600" />
               ) : (
-                <MapPin className="w-5 h-5 text-emerald-600" />
+                <Shield className="w-5 h-5 text-emerald-600" />
               )}
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                {activeTab === "umum" ? "Pengaturan Umum" : "Pengaturan Kontak"}
+                {activeTab === "umum" ? "Pengaturan Umum" : activeTab === "kontak" ? "Pengaturan Kontak" : "Pengaturan Privacy"}
               </h2>
               <p className="text-sm text-gray-500">
                 {activeTab === "umum" 
                   ? "Kelola informasi dasar website Anda" 
-                  : "Kelola informasi kontak, media sosial, dan lokasi kantor desa"
+                  : activeTab === "kontak"
+                  ? "Kelola informasi kontak dan media sosial"
+                  : "Kelola keamanan akun admin Anda"
                 }
               </p>
             </div>
@@ -369,20 +523,6 @@ export default function AdminPengaturanPage() {
                     />
                   </div>
                 </div>
-                <div className="mt-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Alamat
-                  </label>
-                  <textarea
-                    value={settings.address}
-                    onChange={(e) =>
-                      handleInputChange("address", e.target.value)
-                    }
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-                    placeholder="Masukkan alamat lengkap desa..."
-                  />
-                </div>
               </div>
 
               {/* Media Sosial */}
@@ -438,163 +578,247 @@ export default function AdminPengaturanPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Google Maps Lokasi Kantor Desa */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+          {/* Privacy Tab */}
+          {activeTab === "privacy" && (
+            <div className="max-w-4xl mx-auto space-y-8">
+              {/* Informasi Akun */}
+              <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-6 border border-red-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                    <MapPin className="w-4 h-4 text-green-600" />
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                    <Shield className="w-4 h-4 text-red-600" />
                   </div>
-                  Lokasi Kantor Desa
+                  Informasi Akun
                 </h3>
                 
-                <div className="space-y-6">
-                  {/* Info dan Instruksi */}
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="text-sm text-gray-600 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Navigation className="w-3 h-3 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-blue-900 mb-2">🗺️ Pilih Lokasi Kantor Desa</p>
-                          <p className="mb-2">
-                            Gunakan peta interaktif di bawah untuk memilih lokasi kantor desa dengan mudah:
-                          </p>
-                          <ul className="list-disc list-inside space-y-1 text-xs">
-                            <li>🎯 Klik langsung di peta untuk menandai lokasi</li>
-                            <li> Gunakan lokasi GPS saat ini</li>
-                            <li>🖱️ Seret marker untuk posisi yang tepat</li>
-                            <li>🔄 URL iframe otomatis ter-generate</li>
-                          </ul>
-                          {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-                            <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                              <p className="text-yellow-800 text-xs">
-                                <strong>⚠️ API Key Required:</strong> Tambahkan <code className="bg-gray-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> ke file .env.local untuk mengaktifkan fitur interaktif.
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                {/* Current Admin Info Display */}
+                {isLoadingAdmin ? (
+                  <div className="bg-white rounded-xl p-6 border border-gray-200 mb-6">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Interactive Map Container */}
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="block text-sm font-semibold text-gray-700">
-                        🗺️ Peta Interaktif
-                      </label>
+                ) : adminDataError ? (
+                  <div className="bg-white rounded-xl p-6 border border-red-200 mb-6">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Shield className="w-6 h-6 text-red-600" />
+                      </div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Gagal Memuat Data Admin</h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Tidak dapat mengambil informasi admin dari token JWT. Silakan login ulang atau coba lagi.
+                      </p>
                       <button
-                        type="button"
-                        onClick={getCurrentLocation}
-                        disabled={!isMapLoaded}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center text-sm"
-                        title="Gunakan lokasi saat ini"
+                        onClick={fetchAdminData}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                       >
-                        <Target className="w-4 h-4 mr-1" />
-                        Lokasi Saya
+                        Coba Lagi
                       </button>
                     </div>
-                    
-                    {/* Map Container */}
-                    <div 
-                      ref={mapRef}
-                      className="w-full h-96 bg-gray-100 rounded-xl border border-gray-300 flex items-center justify-center overflow-hidden"
-                    >
-                      {!isMapLoaded && (
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-3"></div>
-                          <p className="text-gray-600">
-                            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 
-                              'Memuat Google Maps...' : 
-                              'Memerlukan Google Maps API Key'
-                            }
-                          </p>
-                          {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-                            <p className="text-xs text-red-600 mt-2">
-                              Setup API key untuk mengaktifkan fitur ini
-                            </p>
-                          )}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl p-4 border border-gray-200 mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Informasi Admin Saat Ini
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Username</span>
+                          <span className="font-mono text-gray-800">{adminData.username || 'Tidak tersedia'}</span>
+                        </div>
+                        <span className="text-xs text-emerald-600 bg-emerald-100 px-2 py-1 rounded font-medium">
+                          {adminData.role || 'Admin'}
+                        </span>
+                      </div>
+                      {adminData.nama && (
+                        <div className="flex items-center p-3 bg-blue-50 rounded-lg">
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500">Nama Lengkap</span>
+                            <span className="font-medium text-gray-800">{adminData.nama}</span>
+                          </div>
+                        </div>
+                      )}
+                      {adminData.email && (
+                        <div className="flex items-center p-3 bg-green-50 rounded-lg">
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500">Email</span>
+                            <span className="font-medium text-gray-800">{adminData.email}</span>
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
+                )}
 
-                  {/* Coordinates Display */}
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      📍 Koordinat Lokasi
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Latitude</label>
-                        <input
-                          type="number"
-                          value={settings.latitude}
-                          onChange={(e) => {
-                            const lat = parseFloat(e.target.value);
-                            if (!isNaN(lat)) {
-                              setSettings(prev => ({ 
-                                ...prev, 
-                                latitude: lat,
-                                mapsEmbedUrl: generateEmbedUrl(lat, prev.longitude)
-                              }));
-                              if (markerRef.current && mapInstanceRef.current) {
-                                const newPos = { lat, lng: settings.longitude };
-                                markerRef.current.setPosition(newPos);
-                                mapInstanceRef.current.setCenter(newPos);
-                              }
-                            }
-                          }}
-                          step="0.000001"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Longitude</label>
-                        <input
-                          type="number"
-                          value={settings.longitude}
-                          onChange={(e) => {
-                            const lng = parseFloat(e.target.value);
-                            if (!isNaN(lng)) {
-                              setSettings(prev => ({ 
-                                ...prev, 
-                                longitude: lng,
-                                mapsEmbedUrl: generateEmbedUrl(prev.latitude, lng)
-                              }));
-                              if (markerRef.current && mapInstanceRef.current) {
-                                const newPos = { lat: settings.latitude, lng };
-                                markerRef.current.setPosition(newPos);
-                                mapInstanceRef.current.setCenter(newPos);
-                              }
-                            }
-                          }}
-                          step="0.000001"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Generated Embed URL */}
-                  <div className="bg-white rounded-xl p-4 border border-gray-200">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      🔗 URL Iframe Google Maps (Auto Generated)
-                    </label>
-                    <div className="space-y-3">
-                      <textarea
-                        value={settings.mapsEmbedUrl}
-                        onChange={(e) => handleInputChange("mapsEmbedUrl", e.target.value)}
-                        placeholder="URL iframe akan dibuat otomatis saat Anda memilih lokasi di peta..."
-                        rows={3}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 text-sm font-mono"
+                {/* Change Username */}
+                <div className="bg-white rounded-xl p-4 border border-gray-200">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Ubah Username
+                  </label>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Username Baru</label>
+                      <input
+                        type="text"
+                        value={privacySettings.newUsername}
+                        onChange={(e) => handlePrivacyInputChange("newUsername", e.target.value)}
+                        placeholder="Masukkan username baru..."
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
                       />
-                      <p className="text-xs text-gray-600">
-                        💡 URL ini akan digunakan untuk menampilkan peta di halaman "Tentang Desa"
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Minimal 3 karakter, hanya huruf, angka, dan underscore</p>
                     </div>
+                    <button
+                      onClick={handleUsernameChange}
+                      disabled={!privacySettings.newUsername.trim() || isUpdatingUsername}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center"
+                    >
+                      {isUpdatingUsername && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      )}
+                      {isUpdatingUsername ? 'Mengubah...' : 'Ubah Username'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Keamanan Password */}
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-6 border border-orange-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                    <Shield className="w-4 h-4 text-orange-600" />
+                  </div>
+                  Keamanan Password
+                </h3>
+                
+                <div className="bg-white rounded-xl p-6 border border-gray-200">
+                  <label className="block text-sm font-semibold text-gray-700 mb-4">
+                    Ubah Password
+                  </label>
+                  
+                  <div className="space-y-4">
+                    {/* Current Password */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Password Saat Ini</label>
+                      <div className="relative">
+                        <input
+                          type={showPasswords.current ? "text" : "password"}
+                          value={privacySettings.currentPassword}
+                          onChange={(e) => handlePrivacyInputChange("currentPassword", e.target.value)}
+                          placeholder="Masukkan password saat ini..."
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('current')}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* New Password */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Password Baru</label>
+                      <div className="relative">
+                        <input
+                          type={showPasswords.new ? "text" : "password"}
+                          value={privacySettings.newPassword}
+                          onChange={(e) => handlePrivacyInputChange("newPassword", e.target.value)}
+                          placeholder="Masukkan password baru..."
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('new')}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Minimal 6 karakter untuk keamanan optimal</p>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Konfirmasi Password Baru</label>
+                      <div className="relative">
+                        <input
+                          type={showPasswords.confirm ? "text" : "password"}
+                          value={privacySettings.confirmPassword}
+                          onChange={(e) => handlePrivacyInputChange("confirmPassword", e.target.value)}
+                          placeholder="Konfirmasi password baru..."
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('confirm')}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Password Match Indicator */}
+                    {privacySettings.newPassword && privacySettings.confirmPassword && (
+                      <div className={`p-3 rounded-lg text-sm ${
+                        privacySettings.newPassword === privacySettings.confirmPassword 
+                          ? 'bg-green-50 border border-green-200 text-green-800' 
+                          : 'bg-red-50 border border-red-200 text-red-800'
+                      }`}>
+                        {privacySettings.newPassword === privacySettings.confirmPassword 
+                          ? 'Password cocok' 
+                          : 'Password tidak cocok'}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handlePasswordChange}
+                      disabled={!privacySettings.currentPassword || !privacySettings.newPassword || !privacySettings.confirmPassword || isUpdatingPassword}
+                      className="w-full px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center"
+                    >
+                      {isUpdatingPassword && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      )}
+                      {isUpdatingPassword ? 'Mengubah Password...' : 'Ubah Password'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security Tips */}
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                    <Shield className="w-4 h-4 text-gray-600" />
+                  </div>
+                  Tips Keamanan
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <h4 className="font-semibold text-gray-800 mb-2">Password Kuat</h4>
+                    <p className="text-sm text-gray-600">Gunakan kombinasi huruf besar, kecil, angka, dan simbol minimal 8 karakter.</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <h4 className="font-semibold text-gray-800 mb-2">Update Berkala</h4>
+                    <p className="text-sm text-gray-600">Ubah password secara berkala, minimal setiap 3-6 bulan sekali.</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <h4 className="font-semibold text-gray-800 mb-2">Jangan Berbagi</h4>
+                    <p className="text-sm text-gray-600">Jangan pernah berbagi username dan password dengan orang lain.</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-xl border border-gray-100">
+                    <h4 className="font-semibold text-gray-800 mb-2">Logout Aman</h4>
+                    <p className="text-sm text-gray-600">Selalu logout setelah selesai menggunakan admin panel.</p>
                   </div>
                 </div>
               </div>

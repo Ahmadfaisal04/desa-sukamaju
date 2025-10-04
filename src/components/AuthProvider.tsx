@@ -25,14 +25,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Ensure component is mounted before accessing localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Check for existing authentication
     const checkAuth = () => {
-      // Make sure we're on the client side
-      if (typeof window !== 'undefined') {
+      // Make sure we're on the client side and component is mounted
+      if (mounted && typeof window !== 'undefined') {
         const authToken = localStorage.getItem("adminAuth");
         const apiToken = localStorage.getItem("adminToken");
         
@@ -45,8 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     };
 
-    checkAuth();
-  }, []);
+    if (mounted) {
+      checkAuth();
+    }
+  }, [mounted]);
 
   useEffect(() => {
     // Redirect logic
@@ -73,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [isAuthenticated, isLoading, pathname, router]);
 
   const login = (token?: string) => {
-    if (typeof window !== 'undefined') {
+    if (mounted && typeof window !== 'undefined') {
       localStorage.setItem("adminAuth", "true");
       if (token) {
         localStorage.setItem("adminToken", token);
@@ -82,8 +90,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsAuthenticated(true);
     console.log('Login successful, isAuthenticated set to true');
   };
+  
   const logout = () => {
-    if (typeof window !== 'undefined') {
+    if (mounted && typeof window !== 'undefined') {
       localStorage.removeItem("adminAuth");
       localStorage.removeItem("adminToken");
     }
@@ -91,6 +100,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('Logout successful, isAuthenticated set to false');
     router.push("/");
   };
+
+  // Don't render children until component is mounted (client-side)
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, isLoading }}>

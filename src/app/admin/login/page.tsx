@@ -191,7 +191,7 @@ export default function AdminLoginPage() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-gray-500 text-sm">
-             &copy; {new Date().getFullYear()} Desa Suka Maju • Created with <span className="text-red-500">❤️</span> by pusatweb
+             &copy; 2025 Desa Suka Maju • Created with <span className="text-red-500">❤️</span> by pusatweb
           </p>
         </div>
       </div>

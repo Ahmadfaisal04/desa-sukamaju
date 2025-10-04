@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Globe,
   Phone,
+  Shield,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 
@@ -30,6 +31,7 @@ const adminMenuItems = [
 const settingsMenuItems = [
   { href: "/admin/pengaturan?tab=umum", label: "Umum", icon: Globe },
   { href: "/admin/pengaturan?tab=kontak", label: "Kontak", icon: Phone },
+  { href: "/admin/pengaturan?tab=privacy", label: "Privacy", icon: Shield },
 ];
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
