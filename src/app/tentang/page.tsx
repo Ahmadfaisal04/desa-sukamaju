@@ -10,9 +10,19 @@ import {
   Wheat,
   School,
   Phone,
+  Mail,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+
+interface KontakData {
+  id_kontak: string;
+  email: string;
+  telepon: string;
+  facebook: string;
+  youtube: string;
+  instagram: string;
+}
 
 // Hook untuk animasi countup
 const useCountUp = (
@@ -85,7 +95,28 @@ const StatCard = ({
 
 export default function TentangDesa() {
   const [startStatsAnimation, setStartStatsAnimation] = useState(false);
+  const [kontakData, setKontakData] = useState<KontakData | null>(null);
+  const [loading, setLoading] = useState(true);
   const statsRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const fetchKontakData = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`);
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+          setKontakData(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching kontak data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKontakData();
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -144,8 +175,21 @@ Dikirim melalui Website Desa Sukamaju
 Tanggal: ${new Date().toLocaleDateString("id-ID")}
     `.trim();
 
-    // Nomor WhatsApp tujuan (ganti dengan nomor resmi desa)
-    const whatsappNumber = "62882022452792"; // Ganti dengan nomor WhatsApp desa
+    // Nomor WhatsApp tujuan dari API atau fallback
+    const defaultWhatsapp = "62882022452792"; // Fallback jika API tidak tersedia
+    let whatsappNumber = defaultWhatsapp;
+    
+    // Gunakan nomor dari API jika tersedia
+    if (kontakData?.telepon) {
+      // Pastikan format nomor dimulai dengan 62
+      let apiNumber = kontakData.telepon.replace(/[^0-9]/g, ''); // Hapus karakter non-digit
+      if (apiNumber.startsWith('0')) {
+        apiNumber = '62' + apiNumber.substring(1); // Ganti 0 dengan 62
+      } else if (!apiNumber.startsWith('62')) {
+        apiNumber = '62' + apiNumber; // Tambah 62 jika belum ada
+      }
+      whatsappNumber = apiNumber;
+    }
 
     // Encode pesan untuk URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -624,33 +668,24 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                     <h4 className="font-semibold text-gray-800">Telepon</h4>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    (021) 1234-5678
+                    {loading ? "Loading..." : (kontakData?.telepon || "(021) 1234-5678")}
                     <br />
-                    WhatsApp: +62 812-3456-7890
+                    WhatsApp: {loading ? "Loading..." : (kontakData?.telepon || "+62 812-3456-7890")}
                   </p>
                 </div>
               </div>
 
+              {/* Email Contact Card */}
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                 <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-800">Jam Pelayanan</h4>
+                  <h4 className="font-semibold text-gray-800">Email</h4>
                 </div>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p>
-                    <span className="font-medium">Senin - Kamis:</span> 08:00 -
-                    16:00 WIB
-                  </p>
-                  <p>
-                    <span className="font-medium">Jumat:</span> 08:00 - 11:30
-                    WIB
-                  </p>
-                  <p>
-                    <span className="font-medium">Sabtu - Minggu:</span> Tutup
-                  </p>
-                </div>
+                <p className="text-gray-600 text-sm">
+                  {loading ? "Loading..." : (kontakData?.email || "info@desaSukamaju.id")}
+                </p>
               </div>
             </div>
           </div>

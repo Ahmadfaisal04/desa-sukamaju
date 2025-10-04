@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Phone,
@@ -9,7 +10,37 @@ import {
   Youtube,
 } from "lucide-react";
 
+interface KontakData {
+  id_kontak: string;
+  email: string;
+  telepon: string;
+  facebook: string;
+  youtube: string;
+  instagram: string;
+}
+
 const Footer = () => {
+  const [kontakData, setKontakData] = useState<KontakData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchKontakData = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`);
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+          setKontakData(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching kontak data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKontakData();
+  }, []);
   return (
     <footer className="bg-gray-800 text-white">
       <div className="container mx-auto px-4 py-12">
@@ -36,24 +67,58 @@ const Footer = () => {
               masyarakat yang mandiri, sejahtera, dan berdaya saing.
             </p>
             <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
+              {kontakData?.facebook && (
+                <a
+                  href={kontakData.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {kontakData?.instagram && (
+                <a
+                  href={kontakData.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {kontakData?.youtube && (
+                <a
+                  href={kontakData.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                >
+                  <Youtube className="w-5 h-5" />
+                </a>
+              )}
+              {!kontakData?.facebook && !kontakData?.instagram && !kontakData?.youtube && !loading && (
+                <>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                  >
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                </>
+              )}
             </div>
           </div>
           {/* Quick Links */}
@@ -118,11 +183,15 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                <p className="text-gray-300 text-sm">(021) 1234-5678</p>
+                <p className="text-gray-300 text-sm">
+                  {loading ? "Loading..." : (kontakData?.telepon || "(021) 1234-5678")}
+                </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                <p className="text-gray-300 text-sm">info@desaSukamaju.id</p>
+                <p className="text-gray-300 text-sm">
+                  {loading ? "Loading..." : (kontakData?.email || "info@desaSukamaju.id")}
+                </p>
               </div>
             </div>
           </div>
