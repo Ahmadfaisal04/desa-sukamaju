@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Menu,
   X,
@@ -13,8 +13,10 @@ import {
   Settings,
   LogOut,
   BarChart3,
-  FileText,
-  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  Phone,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 
@@ -23,13 +25,28 @@ const adminMenuItems = [
   { href: "/admin/berita", label: "Kelola Berita", icon: Newspaper },
   { href: "/admin/galeri", label: "Kelola Galeri", icon: Camera },
   { href: "/admin/organisasi", label: "Kelola Organisasi", icon: Users },
-  { href: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
+];
+
+const settingsMenuItems = [
+  { href: "/admin/pengaturan?tab=umum", label: "Umum", icon: Globe },
+  { href: "/admin/pengaturan?tab=kontak", label: "Kontak", icon: Phone },
 ];
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, logout, isLoading } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Get current tab from URL params, with fallback
+  const currentTab = mounted ? (searchParams.get('tab') || 'umum') : 'umum';
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -103,15 +120,76 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors duration-200 group"
+                className={`flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors duration-200 group ${
+                  pathname === item.href ? "bg-emerald-100 text-emerald-700" : ""
+                }`}
                 onClick={() => setSidebarOpen(false)}
               >
-                <item.icon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-emerald-600" />
-                <span className="group-hover:text-emerald-600">
+                <item.icon className={`w-5 h-5 mr-3 ${
+                  pathname === item.href ? "text-emerald-600" : "text-gray-500 group-hover:text-emerald-600"
+                }`} />
+                <span className={`${
+                  pathname === item.href ? "text-emerald-700" : "group-hover:text-emerald-600"
+                }`}>
                   {item.label}
                 </span>
               </Link>
             ))}
+            
+            {/* Settings Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setSettingsDropdownOpen(!settingsDropdownOpen)}
+                className={`w-full flex items-center justify-between px-3 py-3 text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors duration-200 group ${
+                  pathname.startsWith("/admin/pengaturan") ? "bg-emerald-100 text-emerald-700" : ""
+                }`}
+              >
+                <div className="flex items-center">
+                  <Settings className={`w-5 h-5 mr-3 ${
+                    pathname.startsWith("/admin/pengaturan") ? "text-emerald-600" : "text-gray-500 group-hover:text-emerald-600"
+                  }`} />
+                  <span className={`${
+                    pathname.startsWith("/admin/pengaturan") ? "text-emerald-700" : "group-hover:text-emerald-600"
+                  }`}>
+                    Pengaturan
+                  </span>
+                </div>
+                {settingsDropdownOpen ? (
+                  <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
+                )}
+              </button>
+              
+              {settingsDropdownOpen && (
+                <div className="mt-1 ml-6 space-y-1">
+                  {settingsMenuItems.map((item) => {
+                    const tabParam = new URL(item.href, 'http://localhost').searchParams.get('tab');
+                    const isActive = mounted && pathname === '/admin/pengaturan' && currentTab === tabParam;
+                    
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors duration-200 group ${
+                          isActive ? "bg-emerald-50 text-emerald-700" : ""
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <item.icon className={`w-4 h-4 mr-3 ${
+                          isActive ? "text-emerald-600" : "text-gray-400 group-hover:text-emerald-600"
+                        }`} />
+                        <span className={`${
+                          isActive ? "text-emerald-700" : "group-hover:text-emerald-600"
+                        }`}>
+                          {item.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>{" "}
           <div className="mt-8 pt-8 border-t border-gray-200 sticky bottom-0 bg-white">
             {" "}
@@ -179,7 +257,9 @@ export default function AdminLayout({
 }) {
   return (
     <AuthProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </Suspense>
     </AuthProvider>
   );
 }

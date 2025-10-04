@@ -130,7 +130,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2025 Desa Suka Maju • Created with ❤️ by pusatweb.
+             &copy; {new Date().getFullYear()} Desa Suka Maju • Created with <span className="text-red-500">❤️</span> by pusatweb
           </p>
         </div>
       </div>

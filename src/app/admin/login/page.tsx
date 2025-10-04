@@ -4,6 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, Lock, User, AlertCircle } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+
+interface LoginResponse {
+  code: number;
+  status: string;
+  token: string;
+  message: string;
+}
 
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState({
@@ -14,24 +22,48 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Simulate authentication - replace with real authentication logic
     try {
-      // Simple demo credentials - replace with proper authentication
-      if (formData.username === "admin" && formData.password === "admin123") {
-        // Store authentication token/session
-        localStorage.setItem("adminAuth", "true");
-        // Redirect will be handled by the AuthProvider
-        window.location.href = "/admin";
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!apiBaseUrl) {
+        throw new Error('API Base URL tidak dikonfigurasi');
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/v1/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+
+      const data: LoginResponse = await response.json();
+
+      if (data.code === 200 && data.status === 'OK') {
+        // Store authentication token in localStorage
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminToken', data.token);
+        
+        // Update auth context
+        login(data.token);
+        
+        // Redirect to admin dashboard
+        router.push('/admin');
       } else {
-        setError("Username atau password salah");
+        setError(data.message || 'Login gagal');
       }
     } catch (err) {
-      setError("Terjadi kesalahan saat login");
+      console.error('Login error:', err);
+      setError('Terjadi kesalahan saat login. Pastikan server API berjalan.');
     } finally {
       setIsLoading(false);
     }
@@ -154,27 +186,12 @@ export default function AdminLoginPage() {
               {isLoading ? "Memproses..." : "Masuk"}
             </button>
           </form>
-
-          {/* Demo Credentials Info */}
-          <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-            <p className="text-emerald-800 text-sm font-medium mb-1">
-              Demo Credentials:
-            </p>
-            <p className="text-emerald-700 text-sm">
-              Username:{" "}
-              <code className="bg-emerald-100 px-1 rounded">admin</code>
-            </p>
-            <p className="text-emerald-700 text-sm">
-              Password:{" "}
-              <code className="bg-emerald-100 px-1 rounded">admin123</code>
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-gray-500 text-sm">
-            © 2025 Desa Suka Maju • Created with ❤️ by pusatweb.
+             &copy; {new Date().getFullYear()} Desa Suka Maju • Created with <span className="text-red-500">❤️</span> by pusatweb
           </p>
         </div>
       </div>
