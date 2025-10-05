@@ -26,14 +26,16 @@ const Footer = () => {
   useEffect(() => {
     const fetchKontakData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`
+        );
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
           setKontakData(result.data);
         }
       } catch (error) {
-        console.error('Error fetching kontak data:', error);
+        console.error("Error fetching kontak data:", error);
       } finally {
         setLoading(false);
       }
@@ -45,8 +47,7 @@ const Footer = () => {
     <footer className="bg-gray-800 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {" "}
-          {/* About Section */}
+          {/* About Section */}{" "}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 relative">
@@ -97,33 +98,36 @@ const Footer = () => {
                   <Youtube className="w-5 h-5" />
                 </a>
               )}
-              {!kontakData?.facebook && !kontakData?.instagram && !kontakData?.youtube && !loading && (
-                <>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-                  >
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-                  >
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
-                  >
-                    <Youtube className="w-5 h-5" />
-                  </a>
-                </>
-              )}
+              {!kontakData?.facebook &&
+                !kontakData?.instagram &&
+                !kontakData?.youtube &&
+                !loading && (
+                  <>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                    >
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                    >
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-emerald-400 transition-colors duration-200"
+                    >
+                      <Youtube className="w-5 h-5" />
+                    </a>
+                  </>
+                )}
             </div>
-          </div>
-          {/* Quick Links */}
+          </div>{" "}
+          {/* Quick Links */}{" "}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Menu Utama</h4>{" "}
+            <h4 className="font-semibold text-lg mb-4">Menu Utama</h4>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -166,7 +170,7 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div>{" "}
           {/* Contact Info */}
           <div>
             <h4 className="font-semibold text-lg mb-4">Kontak</h4>
@@ -184,13 +188,17 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  {loading ? "Loading..." : (kontakData?.telepon || "(021) 1234-5678")}
+                  {loading
+                    ? "Loading..."
+                    : kontakData?.telepon || "(021) 1234-5678"}
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  {loading ? "Loading..." : (kontakData?.email || "info@desaSukamaju.id")}
+                  {loading
+                    ? "Loading..."
+                    : kontakData?.email || "info@desaSukamaju.id"}
                 </p>
               </div>
             </div>
@@ -199,7 +207,8 @@ const Footer = () => {
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-             &copy; {new Date().getFullYear()} Desa Suka Maju • Created with <span className="text-red-500">❤️</span> by pusatweb
+            &copy; {new Date().getFullYear()} Desa Suka Maju • Created with{" "}
+            <span className="text-red-500">❤️</span> by pusatweb
           </p>
         </div>
       </div>

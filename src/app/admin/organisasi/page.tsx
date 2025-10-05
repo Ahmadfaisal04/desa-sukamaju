@@ -227,8 +227,7 @@ export default function AdminOrganisasiPage() {
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center space-x-4">                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-emerald-700 font-semibold text-sm">
                           {member.name
                             .split(" ")
@@ -246,8 +245,7 @@ export default function AdminOrganisasiPage() {
                             {member.description}
                           </p>
                         )}
-                      </div>
-                    </div>
+                      </div>                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div>

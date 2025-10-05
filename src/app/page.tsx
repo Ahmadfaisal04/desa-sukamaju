@@ -115,21 +115,36 @@ export default function Home() {
 
   return (
     <div className="bg-gray-50">
+      {" "}
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 lg:py-32">
+      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
+              <h1
+                className="text-4xl lg:text-6xl font-bold mb-6 leading-tight"
+                data-aos="fade-right"
+                data-aos-duration="1000"
+              >
                 Selamat Datang di
                 <span className="block text-emerald-200">Desa Sukamaju</span>
               </h1>
-              <p className="text-xl lg:text-2xl mb-8 text-emerald-100 leading-relaxed">
+              <p
+                className="text-xl lg:text-2xl mb-8 text-emerald-100 leading-relaxed"
+                data-aos="fade-right"
+                data-aos-delay="200"
+                data-aos-duration="1000"
+              >
                 Desa yang maju, mandiri, dan sejahtera bagi semua warga
                 masyarakat
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div
+                className="flex flex-col sm:flex-row gap-4"
+                data-aos="fade-up"
+                data-aos-delay="400"
+                data-aos-duration="1000"
+              >
                 <Link
                   href="/tentang"
                   className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-emerald-50 transition-all duration-300 flex items-center justify-center space-x-2 group"
@@ -145,20 +160,37 @@ export default function Home() {
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </div>
-            </div>
-            <div className="relative">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            </div>{" "}
+            <div
+              className="relative"
+              data-aos="fade-left"
+              data-aos-delay="300"
+              data-aos-duration="1000"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover-glow">
                 <h3 className="text-2xl font-semibold mb-6">Info Desa</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
+                  <div
+                    className="flex items-center space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="600"
+                  >
                     <MapPin className="w-6 h-6 text-emerald-200" />
                     <span>Kecamatan Karossa, Kabupaten Mamuju Tengah</span>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div
+                    className="flex items-center space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="700"
+                  >
                     <Users className="w-6 h-6 text-emerald-200" />
                     <span>5.432 Jiwa (1.654 KK)</span>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div
+                    className="flex items-center space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="800"
+                  >
                     <Building className="w-6 h-6 text-emerald-200" />
                     <span>3 Dusun, 8 RW, 24 RT</span>
                   </div>
@@ -171,7 +203,11 @@ export default function Home() {
       {/* Quick Stats */}
       <section ref={statsRef} className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div
+            className="text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               Data Statistik Desa
             </h2>
@@ -182,49 +218,78 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <StatCard
-              icon={Users}
-              value={5432}
-              label="Total Penduduk"
-              color="bg-emerald-600"
-              bgColor="from-emerald-50 to-teal-50"
-              borderColor="border-emerald-100"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={Building}
-              value={1654}
-              label="Kepala Keluarga"
-              color="bg-blue-600"
-              bgColor="from-blue-50 to-indigo-50"
-              borderColor="border-blue-100"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={MapPin}
-              value={3}
-              label="Dusun"
-              color="bg-purple-600"
-              bgColor="from-purple-50 to-pink-50"
-              borderColor="border-purple-100"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={Calendar}
-              value={24}
-              label="Rukun Tetangga"
-              color="bg-orange-600"
-              bgColor="from-orange-50 to-red-50"
-              borderColor="border-orange-100"
-              startAnimation={startStatsAnimation}
-            />
+            {" "}
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="100"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Users}
+                value={5432}
+                label="Total Penduduk"
+                color="bg-emerald-600"
+                bgColor="from-emerald-50 to-teal-50"
+                borderColor="border-emerald-100"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="200"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Building}
+                value={1654}
+                label="Kepala Keluarga"
+                color="bg-blue-600"
+                bgColor="from-blue-50 to-indigo-50"
+                borderColor="border-blue-100"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="300"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={MapPin}
+                value={3}
+                label="Dusun"
+                color="bg-purple-600"
+                bgColor="from-purple-50 to-pink-50"
+                borderColor="border-purple-100"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="400"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Calendar}
+                value={24}
+                label="Rukun Tetangga"
+                color="bg-orange-600"
+                bgColor="from-orange-50 to-red-50"
+                borderColor="border-orange-100"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Latest News */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div
+            className="text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               Berita Terkini
             </h2>
@@ -232,13 +297,15 @@ export default function Home() {
               Dapatkan informasi terbaru seputar kegiatan dan perkembangan di
               Desa Sukamaju
             </p>
-          </div>
-
+          </div>{" "}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {latestNews.map((news, index) => (
               <div
                 key={news.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
+                data-aos-duration="800"
               >
                 <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 relative overflow-hidden">
                   <div className="absolute inset-0 bg-emerald-600/20 flex items-center justify-center">
@@ -274,29 +341,41 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="text-center">
+          </div>{" "}
+          <div
+            className="text-center"
+            data-aos="fade-up"
+            data-aos-delay="300"
+            data-aos-duration="600"
+          >
             <Link
               href="/berita"
-              className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-300"
+              className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 hover-lift"
             >
               <span>Lihat Semua Berita</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Vision Mission */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-8">
+              <h2
+                className="text-4xl font-bold text-gray-800 mb-8"
+                data-aos="fade-right"
+                data-aos-duration="800"
+              >
                 Visi & Misi Desa
               </h2>
-
-              <div className="mb-8">
+              <div
+                className="mb-8"
+                data-aos="fade-right"
+                data-aos-delay="200"
+                data-aos-duration="800"
+              >
                 <h3 className="text-2xl font-semibold text-emerald-600 mb-4">
                   Visi
                 </h3>
@@ -304,42 +383,66 @@ export default function Home() {
                   "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera
                   berdasarkan gotong royong dan kearifan lokal"
                 </p>
-              </div>
-
-              <div>
+              </div>{" "}
+              <div
+                data-aos="fade-right"
+                data-aos-delay="400"
+                data-aos-duration="800"
+              >
                 <h3 className="text-2xl font-semibold text-emerald-600 mb-4">
                   Misi
                 </h3>
                 <ul className="space-y-3">
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-right"
+                    data-aos-delay="600"
+                  >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Meningkatkan kualitas pelayanan publik yang prima
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-right"
+                    data-aos-delay="700"
+                  >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Mengembangkan potensi ekonomi desa berbasis kearifan lokal
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-right"
+                    data-aos-delay="800"
+                  >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Memperkuat persatuan dan kesatuan masyarakat
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-right"
+                    data-aos-delay="900"
+                  >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Melestarikan budaya dan tradisi lokal
                     </span>
                   </li>
                 </ul>
-              </div>
-            </div>{" "}
-            <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center p-8">
+              </div>{" "}
+            </div>
+            <div
+              className="relative"
+              data-aos="fade-left"
+              data-aos-delay="300"
+              data-aos-duration="1000"
+            >
+              <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center p-8 hover-glow">
                 <div className="text-center">
                   <div className="w-48 h-48 relative mx-auto mb-6">
                     <Image

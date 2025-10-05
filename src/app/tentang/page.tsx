@@ -102,14 +102,16 @@ export default function TentangDesa() {
   useEffect(() => {
     const fetchKontakData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`
+        );
         const result = await response.json();
-        
+
         if (result.code === 200 && result.data) {
           setKontakData(result.data);
         }
       } catch (error) {
-        console.error('Error fetching kontak data:', error);
+        console.error("Error fetching kontak data:", error);
       } finally {
         setLoading(false);
       }
@@ -178,15 +180,15 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
     // Nomor WhatsApp tujuan dari API atau fallback
     const defaultWhatsapp = "62882022452792"; // Fallback jika API tidak tersedia
     let whatsappNumber = defaultWhatsapp;
-    
+
     // Gunakan nomor dari API jika tersedia
     if (kontakData?.telepon) {
       // Pastikan format nomor dimulai dengan 62
-      let apiNumber = kontakData.telepon.replace(/[^0-9]/g, ''); // Hapus karakter non-digit
-      if (apiNumber.startsWith('0')) {
-        apiNumber = '62' + apiNumber.substring(1); // Ganti 0 dengan 62
-      } else if (!apiNumber.startsWith('62')) {
-        apiNumber = '62' + apiNumber; // Tambah 62 jika belum ada
+      let apiNumber = kontakData.telepon.replace(/[^0-9]/g, ""); // Hapus karakter non-digit
+      if (apiNumber.startsWith("0")) {
+        apiNumber = "62" + apiNumber.substring(1); // Ganti 0 dengan 62
+      } else if (!apiNumber.startsWith("62")) {
+        apiNumber = "62" + apiNumber; // Tambah 62 jika belum ada
       }
       whatsappNumber = apiNumber;
     }
@@ -208,44 +210,71 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
   };
   return (
     <div className="bg-gray-50">
+      {" "}
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20">
+      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1
+              className="text-4xl lg:text-6xl font-bold mb-6"
+              data-aos="fade-down"
+              data-aos-duration="1000"
+            >
               Tentang Desa Sukamaju
             </h1>
-            <p className="text-xl lg:text-2xl text-emerald-100 leading-relaxed">
+            <p
+              className="text-xl lg:text-2xl text-emerald-100 leading-relaxed"
+              data-aos="fade-up"
+              data-aos-delay="300"
+              data-aos-duration="1000"
+            >
               Mengenal lebih dekat sejarah, visi misi, dan potensi desa yang
               kaya akan budaya dan tradisi
             </p>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Profile Desa */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+            <div data-aos="fade-right" data-aos-duration="800">
+              <h2
+                className="text-4xl font-bold text-gray-800 mb-6"
+                data-aos="fade-up"
+                data-aos-delay="200"
+              >
                 Profil Desa
-              </h2>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              </h2>{" "}
+              <p
+                className="text-lg text-gray-700 leading-relaxed mb-6"
+                data-aos="fade-up"
+                data-aos-delay="400"
+              >
                 Desa Sukamaju merupakan salah satu desa di Kecamatan Karossa,
                 Kabupaten Mamuju Tengah yang memiliki potensi besar dalam bidang
                 pertanian, pariwisata, dan pengembangan masyarakat. Dengan luas
                 wilayah sekitar 15,5 km² dan jumlah penduduk 5.432 jiwa, desa
                 ini terus berkembang menjadi desa mandiri dan sejahtera.
               </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
+              <p
+                className="text-lg text-gray-700 leading-relaxed"
+                data-aos="fade-up"
+                data-aos-delay="600"
+              >
                 Letak geografis yang strategis dan didukung oleh sumber daya
                 alam yang melimpah, membuat Desa Sukamaju memiliki prospek yang
                 cerah untuk menjadi desa percontohan dalam pembangunan
                 berkelanjutan.
               </p>
-            </div>{" "}
-            <div className="relative">
+            </div>
+            <div
+              className="relative"
+              data-aos="fade-left"
+              data-aos-delay="400"
+              data-aos-duration="800"
+            >
               <div className="aspect-square bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center p-8">
                 <div className="text-center">
                   <div className="w-48 h-48 relative mx-auto mb-6">
@@ -268,8 +297,13 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
       </section>{" "}
       {/* Data Wilayah */}
       <section ref={statsRef} className="py-16 bg-gray-50">
+        {" "}
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div
+            className="text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="600"
+          >
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               Data Wilayah
             </h2>
@@ -277,40 +311,67 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               Informasi terkini mengenai demografi dan administrasi Desa
               Sukamaju
             </p>
-          </div>
-
+          </div>{" "}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <StatCard
-              icon={MapPin}
-              value={15.5}
-              label="Luas Wilayah"
-              color="bg-emerald-600"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={Users}
-              value={5432}
-              label="Jumlah Penduduk"
-              color="bg-blue-600"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={Building}
-              value={1654}
-              label="Kepala Keluarga"
-              color="bg-purple-600"
-              startAnimation={startStatsAnimation}
-            />
-            <StatCard
-              icon={Calendar}
-              value={1987}
-              label="Tahun Berdiri"
-              color="bg-orange-600"
-              startAnimation={startStatsAnimation}
-            />
-          </div>
-
-          <div className="mt-12 bg-white rounded-xl shadow-lg p-8">
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="200"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={MapPin}
+                value={15.5}
+                label="Luas Wilayah"
+                color="bg-emerald-600"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="300"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Users}
+                value={5432}
+                label="Jumlah Penduduk"
+                color="bg-blue-600"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="400"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Building}
+                value={1654}
+                label="Kepala Keluarga"
+                color="bg-purple-600"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+            <div
+              data-aos="zoom-in"
+              data-aos-delay="500"
+              data-aos-duration="600"
+            >
+              <StatCard
+                icon={Calendar}
+                value={1987}
+                label="Tahun Berdiri"
+                color="bg-orange-600"
+                startAnimation={startStatsAnimation}
+              />
+            </div>
+          </div>{" "}
+          <div
+            className="mt-12 bg-white rounded-xl shadow-lg p-8"
+            data-aos="fade-up"
+            data-aos-delay="600"
+            data-aos-duration="800"
+          >
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
               Batas Wilayah
             </h3>
@@ -334,17 +395,26 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             </div>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Visi Misi */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+            <h2
+              className="text-4xl font-bold text-gray-800 text-center mb-12"
+              data-aos="fade-up"
+              data-aos-duration="600"
+            >
               Visi & Misi
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100">
+              <div
+                className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100"
+                data-aos="fade-right"
+                data-aos-delay="300"
+                data-aos-duration="800"
+              >
                 <div className="w-16 h-16 bg-emerald-600 rounded-full mb-6 flex items-center justify-center">
                   <Award className="w-8 h-8 text-white" />
                 </div>
@@ -355,33 +425,53 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera
                   berdasarkan gotong royong dan kearifan lokal"
                 </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-100">
+              </div>{" "}
+              <div
+                className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-100"
+                data-aos="fade-left"
+                data-aos-delay="500"
+                data-aos-duration="800"
+              >
                 <div className="w-16 h-16 bg-blue-600 rounded-full mb-6 flex items-center justify-center">
                   <Building className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-blue-600 mb-4">Misi</h3>
                 <ul className="space-y-3">
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="700"
+                  >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Meningkatkan kualitas pelayanan publik yang prima
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="800"
+                  >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Mengembangkan potensi ekonomi desa berbasis kearifan lokal
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="900"
+                  >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Memperkuat persatuan dan kesatuan masyarakat
                     </span>
                   </li>
-                  <li className="flex items-start space-x-3">
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="1000"
+                  >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
                       Melestarikan budaya dan tradisi lokal
@@ -392,16 +482,24 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             </div>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Potensi Desa */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+          <h2
+            className="text-4xl font-bold text-gray-800 text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="600"
+          >
             Potensi Desa
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
               <div className="w-16 h-16 bg-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Wheat className="w-8 h-8 text-white" />
               </div>
@@ -412,9 +510,12 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 Lahan pertanian seluas 8.5 km² dengan hasil padi, jagung, dan
                 sayuran berkualitas tinggi
               </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+            </div>{" "}
+            <div
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
               <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <TreePine className="w-8 h-8 text-white" />
               </div>
@@ -426,8 +527,11 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 sumber mata air
               </p>
             </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+              data-aos="fade-up"
+              data-aos-delay="400"
+            >
               <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Users className="w-8 h-8 text-white" />
               </div>
@@ -439,8 +543,11 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 mancanegara
               </p>
             </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+              data-aos="fade-up"
+              data-aos-delay="500"
+            >
               <div className="w-16 h-16 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <School className="w-8 h-8 text-white" />
               </div>
@@ -454,30 +561,51 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             </div>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Sejarah Singkat */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+            <h2
+              className="text-4xl font-bold text-gray-800 text-center mb-12"
+              data-aos="fade-up"
+              data-aos-duration="600"
+            >
               Sejarah Singkat
             </h2>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100">
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            <div
+              className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100"
+              data-aos="fade-up"
+              data-aos-delay="300"
+              data-aos-duration="800"
+            >
+              <p
+                className="text-lg text-gray-700 leading-relaxed mb-6"
+                data-aos="fade-up"
+                data-aos-delay="500"
+              >
                 Desa Sukamaju didirikan pada tahun 1987 sebagai hasil pemekaran
                 dari desa induk yang lebih besar. Nama "Sukamaju" dipilih dengan
                 harapan bahwa desa ini akan menjadi tempat yang memberikan
                 kesejahteraan bagi seluruh warganya.
               </p>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              <p
+                className="text-lg text-gray-700 leading-relaxed mb-6"
+                data-aos="fade-up"
+                data-aos-delay="600"
+              >
                 Pada awal berdirinya, desa ini masih berupa perkampungan kecil
                 dengan mata pencaharian utama bertani dan berkebun. Seiring
                 berjalannya waktu, dengan semangat gotong royong yang tinggi,
                 masyarakat berhasil membangun berbagai fasilitas umum seperti
                 jalan, jembatan, masjid, dan sekolah.
-              </p>{" "}
-              <p className="text-lg text-gray-700 leading-relaxed">
+              </p>
+              <p
+                className="text-lg text-gray-700 leading-relaxed"
+                data-aos="fade-up"
+                data-aos-delay="700"
+              >
                 Kini, setelah lebih dari 35 tahun berkembang, Desa Sukamaju
                 telah menjadi salah satu desa percontohan di kabupaten dengan
                 berbagai prestasi dan inovasi dalam pembangunan desa yang
@@ -486,11 +614,15 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             </div>
           </div>
         </div>
-      </section>
+      </section>{" "}
       {/* Form Pengaduan & Map */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div
+            className="text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="600"
+          >
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
               Hubungi Kami
             </h2>
@@ -501,7 +633,12 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Form Pengaduan */}
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+            <div
+              className="bg-white rounded-xl shadow-lg p-8 border border-gray-200"
+              data-aos="fade-right"
+              data-aos-delay="300"
+              data-aos-duration="800"
+            >
               <div className="mb-6">
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
                   Form Pengaduan
@@ -607,12 +744,20 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   Kirim Pengaduan
                 </button>
               </form>
-            </div>
-
+            </div>{" "}
             {/* Map & Kontak Info */}
-            <div className="space-y-6">
+            <div
+              className="space-y-6"
+              data-aos="fade-left"
+              data-aos-delay="300"
+              data-aos-duration="800"
+            >
               {/* Map */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+              <div
+                className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200"
+                data-aos="fade-up"
+                data-aos-delay="500"
+              >
                 <div className="p-6 border-b border-gray-200">
                   <h3 className="text-xl font-bold text-gray-800 mb-2">
                     Lokasi Kantor Desa
@@ -620,7 +765,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   <p className="text-gray-600">
                     Kunjungi kantor desa untuk pelayanan langsung
                   </p>
-                </div>{" "}
+                </div>
                 <div className="h-80 bg-gray-100 relative overflow-hidden">
                   {/* Google Maps embed for Kantor Desa Suka Maju */}
                   <iframe
@@ -640,11 +785,14 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                     title="Lokasi Kantor Desa Suka Maju"
                   ></iframe>
                 </div>
-              </div>
-
+              </div>{" "}
               {/* Contact Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <div
+                  className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
+                  data-aos="fade-up"
+                  data-aos-delay="600"
+                >
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                       <MapPin className="w-5 h-5 text-blue-600" />
@@ -660,7 +808,11 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <div
+                  className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
+                  data-aos="fade-up"
+                  data-aos-delay="700"
+                >
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                       <Phone className="w-5 h-5 text-green-600" />
@@ -668,15 +820,23 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                     <h4 className="font-semibold text-gray-800">Telepon</h4>
                   </div>
                   <p className="text-gray-600 text-sm">
-                    {loading ? "Loading..." : (kontakData?.telepon || "(021) 1234-5678")}
+                    {loading
+                      ? "Loading..."
+                      : kontakData?.telepon || "(021) 1234-5678"}
                     <br />
-                    WhatsApp: {loading ? "Loading..." : (kontakData?.telepon || "+62 812-3456-7890")}
+                    WhatsApp:{" "}
+                    {loading
+                      ? "Loading..."
+                      : kontakData?.telepon || "+62 812-3456-7890"}
                   </p>
                 </div>
-              </div>
-
+              </div>{" "}
               {/* Email Contact Card */}
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <div
+                className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
+                data-aos="fade-up"
+                data-aos-delay="800"
+              >
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
                     <Mail className="w-5 h-5 text-emerald-600" />
@@ -684,7 +844,9 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   <h4 className="font-semibold text-gray-800">Email</h4>
                 </div>
                 <p className="text-gray-600 text-sm">
-                  {loading ? "Loading..." : (kontakData?.email || "info@desaSukamaju.id")}
+                  {loading
+                    ? "Loading..."
+                    : kontakData?.email || "info@desaSukamaju.id"}
                 </p>
               </div>
             </div>

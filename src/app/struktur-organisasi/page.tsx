@@ -16,32 +16,50 @@ export default function StrukturOrganisasi() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      {" "}
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20">
+      <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1
+              className="text-4xl lg:text-6xl font-bold mb-6"
+              data-aos="fade-down"
+              data-aos-duration="1000"
+            >
               Struktur Organisasi
             </h1>
-            <p className="text-xl lg:text-2xl text-emerald-100 leading-relaxed">
+            <p
+              className="text-xl lg:text-2xl text-emerald-100 leading-relaxed"
+              data-aos="fade-up"
+              data-aos-delay="300"
+              data-aos-duration="1000"
+            >
               Mengenal para pemimpin dan perangkat desa yang mengabdi untuk
               kemajuan Desa Sejahtera
             </p>
           </div>
         </div>
-      </section>
-
+      </section>{" "}
       {/* Kepala Desa */}
       {kepalaDesa && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl font-bold text-gray-800 mb-12">
+              <h2
+                className="text-4xl font-bold text-gray-800 mb-12"
+                data-aos="fade-up"
+                data-aos-duration="800"
+              >
                 Kepala Desa
               </h2>
 
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-100 max-w-2xl mx-auto">
+              <div
+                className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-100 max-w-2xl mx-auto hover-lift"
+                data-aos="zoom-in"
+                data-aos-delay="200"
+                data-aos-duration="800"
+              >
                 <div className="w-32 h-32 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
                   <span className="text-emerald-700 font-semibold text-lg">
                     Foto
@@ -70,20 +88,26 @@ export default function StrukturOrganisasi() {
             </div>
           </div>
         </section>
-      )}
-
+      )}{" "}
       {/* Perangkat Desa */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+          <h2
+            className="text-4xl font-bold text-gray-800 text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
             Perangkat Desa
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {perangkatDesa.map((member) => (
+            {perangkatDesa.map((member, index) => (
               <div
                 key={member.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
+                data-aos-duration="600"
               >
                 <div className="aspect-square bg-gradient-to-br from-blue-200 to-purple-200 relative overflow-hidden">
                   <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
@@ -113,20 +137,26 @@ export default function StrukturOrganisasi() {
             ))}
           </div>
         </div>
-      </section>
-
+      </section>{" "}
       {/* Kepala Dusun */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+          <h2
+            className="text-4xl font-bold text-gray-800 text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
             Kepala Dusun
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {kepalaDusun.map((member) => (
+            {kepalaDusun.map((member, index) => (
               <div
                 key={member.id}
-                className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100 text-center hover:shadow-lg transition-shadow duration-300"
+                className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100 text-center hover:shadow-lg transition-all duration-300 hover-lift"
+                data-aos="zoom-in"
+                data-aos-delay={index * 150}
+                data-aos-duration="700"
               >
                 <div className="w-24 h-24 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
                   <span className="text-emerald-700 font-semibold">Foto</span>
@@ -152,64 +182,170 @@ export default function StrukturOrganisasi() {
             ))}
           </div>
         </div>
-      </section>
-
+      </section>{" "}
       {/* Organizational Chart */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-12">
+          <h2
+            className="text-4xl font-bold text-gray-800 text-center mb-12"
+            data-aos="fade-up"
+            data-aos-duration="800"
+          >
             Bagan Organisasi
           </h2>
-
           <div className="max-w-6xl mx-auto">
-            <div className="bg-white rounded-xl shadow-lg p-8 overflow-x-auto">
-              <div className="min-w-[800px]">
-                {/* Kepala Desa */}
-                <div className="text-center mb-8">
-                  <div className="inline-block bg-emerald-100 border-2 border-emerald-500 rounded-lg p-4 max-w-xs">
+            <div
+              className="bg-white rounded-xl shadow-lg p-4 md:p-8 hover-glow"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
+              {/* Mobile Layout - Vertical Stack */}
+              <div className="block md:hidden">
+                <div className="flex flex-col items-center space-y-4">
+                  {" "}
+                  {/* Kepala Desa */}
+                  <div
+                    className="bg-emerald-100 border-2 border-emerald-500 rounded-lg p-4 w-full max-w-xs text-center hover-scale"
+                    data-aos="fade-down"
+                    data-aos-delay="100"
+                  >
                     <h3 className="font-bold text-emerald-700">Kepala Desa</h3>
                     <p className="text-sm text-emerald-600">
                       {kepalaDesa?.name}
                     </p>
                   </div>
-                </div>
-
-                {/* Connection Line */}
-                <div className="flex justify-center mb-8">
-                  <div className="w-px h-8 bg-gray-300"></div>
-                </div>
-
-                {/* Perangkat Desa */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                  {perangkatDesa.map((member) => (
-                    <div key={member.id} className="text-center">
-                      <div className="bg-blue-100 border-2 border-blue-500 rounded-lg p-3">
-                        <h4 className="font-semibold text-blue-700 text-sm">
-                          {member.position}
+                  {/* Connection Line */}
+                  <div
+                    className="w-px h-6 bg-gray-300"
+                    data-aos="fade-in"
+                    data-aos-delay="200"
+                  ></div>
+                  {/* Sekretaris Desa */}
+                  {(() => {
+                    const sekretaris = perangkatDesa.find(
+                      (member) => member.position === "Sekretaris Desa"
+                    );
+                    return sekretaris ? (
+                      <div
+                        className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 w-full max-w-xs text-center hover-scale"
+                        data-aos="fade-up"
+                        data-aos-delay="300"
+                      >
+                        <h4 className="font-semibold text-blue-700">
+                          {sekretaris.position}
                         </h4>
-                        <p className="text-xs text-blue-600">{member.name}</p>
+                        <p className="text-sm text-blue-600">
+                          {sekretaris.name}
+                        </p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Connection Line */}
-                <div className="flex justify-center mb-8">
-                  <div className="w-px h-8 bg-gray-300"></div>
-                </div>
-
-                {/* Kepala Dusun */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {kepalaDusun.map((member) => (
-                    <div key={member.id} className="text-center">
-                      <div className="bg-purple-100 border-2 border-purple-500 rounded-lg p-3">
+                    ) : null;
+                  })()}
+                  {/* Connection Line */}
+                  <div className="w-px h-6 bg-gray-300"></div>{" "}
+                  {/* Kepala Urusan - Vertical */}
+                  <div
+                    className="space-y-3 w-full max-w-xs"
+                    data-aos="fade-up"
+                    data-aos-delay="500"
+                  >
+                    {perangkatDesa
+                      .filter((member) =>
+                        member.position.includes("Kepala Urusan")
+                      )
+                      .map((member, index) => (
+                        <div
+                          key={member.id}
+                          className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 text-center hover-scale"
+                          data-aos="zoom-in"
+                          data-aos-delay={600 + index * 100}
+                        >
+                          <h4 className="font-semibold text-blue-700 text-sm">
+                            {member.position}
+                          </h4>
+                          <p className="text-sm text-blue-600">{member.name}</p>
+                        </div>
+                      ))}
+                  </div>
+                  {/* Connection Line */}
+                  <div className="w-px h-6 bg-gray-300"></div>{" "}
+                  {/* Kepala Dusun - Vertical */}
+                  <div
+                    className="space-y-3 w-full max-w-xs"
+                    data-aos="fade-up"
+                    data-aos-delay="800"
+                  >
+                    {kepalaDusun.map((member, index) => (
+                      <div
+                        key={member.id}
+                        className="bg-purple-100 border-2 border-purple-500 rounded-lg p-4 text-center hover-scale"
+                        data-aos="slide-up"
+                        data-aos-delay={900 + index * 100}
+                      >
                         <h4 className="font-semibold text-purple-700 text-sm">
                           {member.position}
                         </h4>
-                        <p className="text-xs text-purple-600">{member.name}</p>
+                        <p className="text-sm text-purple-600">{member.name}</p>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop Layout - Horizontal with scroll */}
+              <div className="hidden md:block overflow-x-auto">
+                <div className="min-w-[800px]">
+                  {/* Kepala Desa */}
+                  <div className="text-center mb-8">
+                    <div className="inline-block bg-emerald-100 border-2 border-emerald-500 rounded-lg p-4 max-w-xs">
+                      <h3 className="font-bold text-emerald-700">
+                        Kepala Desa
+                      </h3>
+                      <p className="text-sm text-emerald-600">
+                        {kepalaDesa?.name}
+                      </p>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Connection Line */}
+                  <div className="flex justify-center mb-8">
+                    <div className="w-px h-8 bg-gray-300"></div>
+                  </div>
+
+                  {/* Perangkat Desa */}
+                  <div className="grid grid-cols-4 gap-4 mb-8">
+                    {perangkatDesa.map((member) => (
+                      <div key={member.id} className="text-center">
+                        <div className="bg-blue-100 border-2 border-blue-500 rounded-lg p-3">
+                          <h4 className="font-semibold text-blue-700 text-sm">
+                            {member.position}
+                          </h4>
+                          <p className="text-xs text-blue-600">{member.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Connection Line */}
+                  <div className="flex justify-center mb-8">
+                    <div className="w-px h-8 bg-gray-300"></div>
+                  </div>
+
+                  {/* Kepala Dusun */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {kepalaDusun.map((member) => (
+                      <div key={member.id} className="text-center">
+                        <div className="bg-purple-100 border-2 border-purple-500 rounded-lg p-3">
+                          <h4 className="font-semibold text-purple-700 text-sm">
+                            {member.position}
+                          </h4>
+                          <p className="text-xs text-purple-600">
+                            {member.name}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>{" "}
