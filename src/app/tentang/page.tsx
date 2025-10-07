@@ -85,7 +85,7 @@ const StatCard = ({
         {label === "Luas Wilayah"
           ? "15,5 km²"
           : label === "Tahun Berdiri"
-          ? "1987"
+          ? "2004"
           : animatedValue.toLocaleString("id-ID")}
       </h3>
       <p className="text-gray-600">{label}</p>
@@ -252,21 +252,20 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 data-aos="fade-up"
                 data-aos-delay="400"
               >
-                Desa Sukamaju merupakan salah satu desa di Kecamatan Karossa,
-                Kabupaten Mamuju Tengah yang memiliki potensi besar dalam bidang
-                pertanian, pariwisata, dan pengembangan masyarakat. Dengan luas
-                wilayah sekitar 15,5 km² dan jumlah penduduk 5.432 jiwa, desa
-                ini terus berkembang menjadi desa mandiri dan sejahtera.
+                Desa Sukamaju merupakan salah satu Desa di Kecamatan Karossa,
+                Kabupaten Mamuju Tengah, Provinsi Sulawesi Barat. Desa Sukamaju
+                terletak di sebelah barat Kecamatan Karossa dengan jarak tempuh
+                7 Km dan jarak tempuh dari Kecamatan Karossa 8 km, sedangkan
+                jarak tempuh dari Kabupaten Mamuju Tengah 141 km.
               </p>
               <p
                 className="text-lg text-gray-700 leading-relaxed"
                 data-aos="fade-up"
                 data-aos-delay="600"
               >
-                Letak geografis yang strategis dan didukung oleh sumber daya
-                alam yang melimpah, membuat Desa Sukamaju memiliki prospek yang
-                cerah untuk menjadi desa percontohan dalam pembangunan
-                berkelanjutan.
+                Desa Sukamaju memiliki luas wilayah 2.350 Ha dan jumlah penduduk
+                1.698 jiwa terdiri dari laki-laki 889 jiwa, perempuan 817 jiwa,
+                sedangkan jumlah Kepala Keluarga 461 KK.
               </p>
             </div>
             <div
@@ -359,7 +358,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             >
               <StatCard
                 icon={Calendar}
-                value={1987}
+                value={2004}
                 label="Tahun Berdiri"
                 color="bg-orange-600"
                 startAnimation={startStatsAnimation}
@@ -378,19 +377,19 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Utara:</h4>
-                <p className="text-gray-600">Desa Makmur</p>
+                <p className="text-gray-600">Desa Karossa</p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Selatan:</h4>
-                <p className="text-gray-600">Desa Bahagia</p>
+                <p className="text-gray-600">Desa Lara</p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Timur:</h4>
-                <p className="text-gray-600">Desa Maju</p>
+                <p className="text-gray-600">Desa Lembah Hopo</p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Barat:</h4>
-                <p className="text-gray-600">Desa Sentosa</p>
+                <p className="text-gray-600">Selat Makassar</p>
               </div>
             </div>
           </div>
@@ -422,8 +421,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   Visi
                 </h3>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera
-                  berdasarkan gotong royong dan kearifan lokal"
+                  "Mewujudkan Masyarakat Adil dan Makmur"
                 </p>
               </div>{" "}
               <div
@@ -444,7 +442,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Meningkatkan kualitas pelayanan publik yang prima
+                      Mewujudkan tata Kelola pemerintahan yang baik
                     </span>
                   </li>
                   <li
@@ -454,7 +452,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Mengembangkan potensi ekonomi desa berbasis kearifan lokal
+                      Meningkatkan kualitas insfratuktur yang berkelanjutan
                     </span>
                   </li>
                   <li
@@ -464,7 +462,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Memperkuat persatuan dan kesatuan masyarakat
+                      Meningkatkan kualitas dan kuantitas Sumber Daya Manusia
                     </span>
                   </li>
                   <li
@@ -474,7 +472,19 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                   >
                     <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Melestarikan budaya dan tradisi lokal
+                      Meningkatkan Daya Saing Ekonomi berbasis inovasi dan
+                      potensi desa
+                    </span>
+                  </li>
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-up"
+                    data-aos-delay="1000"
+                  >
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-gray-700">
+                      Meningkatkan kualitas pelayanan dalam bidang Pendidikan,
+                      Kesehatan sosial dan hukum
                     </span>
                   </li>
                 </ul>
@@ -572,8 +582,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               data-aos-duration="600"
             >
               Sejarah Singkat
-            </h2>
-
+            </h2>{" "}
             <div
               className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100"
               data-aos="fade-up"
@@ -585,32 +594,99 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 data-aos="fade-up"
                 data-aos-delay="500"
               >
-                Desa Sukamaju didirikan pada tahun 1987 sebagai hasil pemekaran
-                dari desa induk yang lebih besar. Nama "Sukamaju" dipilih dengan
-                harapan bahwa desa ini akan menjadi tempat yang memberikan
-                kesejahteraan bagi seluruh warganya.
+                Desa Sukamaju awalnya adalah salah satu desa dalam wilayah
+                administratif Kecamatan Karossa Kabupaten Mamuju Tengah (Pecahan
+                Kabupaten Mamuju). Desa ini berdiri otonom pada tahun 2004
+                setelah mekar dari desa induk yaitu Desa Lara.
               </p>
               <p
                 className="text-lg text-gray-700 leading-relaxed mb-6"
                 data-aos="fade-up"
                 data-aos-delay="600"
               >
-                Pada awal berdirinya, desa ini masih berupa perkampungan kecil
-                dengan mata pencaharian utama bertani dan berkebun. Seiring
-                berjalannya waktu, dengan semangat gotong royong yang tinggi,
-                masyarakat berhasil membangun berbagai fasilitas umum seperti
-                jalan, jembatan, masjid, dan sekolah.
+                Pada awalnya desa ini adalah daerah bagi warga transmigrasi yang
+                bernama UPTD Lara 1. Pembukaan lahan dimulai pada tahun 1996,
+                kemudian datanglah transmigran pendaratan pertama pada tahun
+                1997 berjumlah 25 Kepala Keluarga (KK) dari Kabupaten Sidrap.
+                Pada tahun 1998 terjadi pendaratan kedua berjumlah 100 KK dari
+                Jawa, dan pendaratan ketiga sebanyak 75 KK dari APDT.
               </p>
+
+              <div
+                className="bg-white p-6 rounded-lg mb-6 border border-emerald-200"
+                data-aos="fade-up"
+                data-aos-delay="650"
+              >
+                <h4 className="text-xl font-semibold text-emerald-700 mb-3">
+                  Kepemimpinan UPTD Lara 1
+                </h4>
+                <p className="text-gray-700 mb-3">
+                  UPTD Lara 1 dipimpin oleh KUPT (Kepala Unit Pemukiman
+                  Transmigrasi) yakni:
+                </p>
+                <ul className="list-decimal list-inside space-y-2 text-gray-700">
+                  <li>H. Tukimin</li>
+                  <li>Alimuddin Rinjani</li>
+                  <li>Ponidin</li>
+                  <li>Bintang C</li>
+                </ul>
+              </div>
+
               <p
-                className="text-lg text-gray-700 leading-relaxed"
+                className="text-lg text-gray-700 leading-relaxed mb-6"
                 data-aos="fade-up"
                 data-aos-delay="700"
               >
-                Kini, setelah lebih dari 35 tahun berkembang, Desa Sukamaju
-                telah menjadi salah satu desa percontohan di kabupaten dengan
-                berbagai prestasi dan inovasi dalam pembangunan desa yang
-                berkelanjutan.
+                Tahun 2004, UPTD Lara 1 diserahkan kepada Pemerintah Daerah
+                Kabupaten Mamuju maka terbentuklah suatu otonomi baru yang
+                diberi nama Desa Sukamaju.
               </p>
+
+              <div
+                className="bg-white p-6 rounded-lg border border-emerald-200"
+                data-aos="fade-up"
+                data-aos-delay="750"
+              >
+                <h4 className="text-xl font-semibold text-emerald-700 mb-4">
+                  Kepemimpinan Desa Sukamaju
+                </h4>
+                <p className="text-gray-700 mb-4">
+                  Pemimpin Desa Sukamaju sejak terbentuknya desa definitif
+                  sampai sekarang:
+                </p>
+                <div className="space-y-3 text-gray-700">
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                    <span className="font-medium">Abdul Rahman H.Ag</span>
+                    <span className="text-sm text-gray-600">
+                      Penjabat Kepala Desa (2004-2007)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                    <span className="font-medium">Abdul Rahman H.Ag</span>
+                    <span className="text-sm text-gray-600">
+                      Kepala Desa (2007-2013)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                    <span className="font-medium">Muhammad Sahir C</span>
+                    <span className="text-sm text-gray-600">
+                      Kepala Desa (2014-2019)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                    <span className="font-medium">Haeril Rijal P.S.IP</span>
+                    <span className="text-sm text-gray-600">
+                      Pejabat Desa (2020-2021)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Ahmad Dj Pababari</span>
+                    <span className="text-sm text-gray-600">
+                      Kepala Desa (2022-sekarang)
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -830,25 +906,54 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                       : kontakData?.telepon || "+62 812-3456-7890"}
                   </p>
                 </div>
-              </div>{" "}
-              {/* Email Contact Card */}
-              <div
-                className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
-                data-aos="fade-up"
-                data-aos-delay="800"
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-emerald-600" />
+
+                {/* Email Contact Card */}
+                <div
+                  className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
+                  data-aos="fade-up"
+                  data-aos-delay="800"
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-800">Email</h4>
                   </div>
-                  <h4 className="font-semibold text-gray-800">Email</h4>
+                  <p className="text-gray-600 text-sm">
+                    {loading
+                      ? "Loading..."
+                      : kontakData?.email || "info@desaSukamaju.id"}
+                  </p>
                 </div>
-                <p className="text-gray-600 text-sm">
-                  {loading
-                    ? "Loading..."
-                    : kontakData?.email || "info@desaSukamaju.id"}
-                </p>
-              </div>
+
+                {/* Service Hours Card */}
+                <div
+                  className="bg-white p-6 rounded-xl shadow-lg border border-gray-200"
+                  data-aos="fade-up"
+                  data-aos-delay="900"
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-800">
+                      Jam Pelayanan
+                    </h4>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Senin - Jumat</span>
+                      <span className="font-medium text-gray-800">
+                        08.00 - 16.00
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sabtu - Minggu</span>
+                      <span className="font-medium text-red-600">Tutup</span>
+                    </div>
+                  </div>
+                </div>
+              </div>{" "}
             </div>
           </div>
         </div>

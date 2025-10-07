@@ -15,21 +15,19 @@ export default function StrukturOrganisasi() {
   );
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {" "}
-      {/* Hero Section */}
+    <div className="bg-gray-50 min-h-screen">      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1
+            <h1 
               className="text-4xl lg:text-6xl font-bold mb-6"
               data-aos="fade-down"
               data-aos-duration="1000"
             >
               Struktur Organisasi
             </h1>
-            <p
+            <p 
               className="text-xl lg:text-2xl text-emerald-100 leading-relaxed"
               data-aos="fade-up"
               data-aos-delay="300"
@@ -40,13 +38,12 @@ export default function StrukturOrganisasi() {
             </p>
           </div>
         </div>
-      </section>{" "}
-      {/* Kepala Desa */}
+      </section>      {/* Kepala Desa */}
       {kepalaDesa && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2
+              <h2 
                 className="text-4xl font-bold text-gray-800 mb-12"
                 data-aos="fade-up"
                 data-aos-duration="800"
@@ -54,7 +51,7 @@ export default function StrukturOrganisasi() {
                 Kepala Desa
               </h2>
 
-              <div
+              <div 
                 className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-100 max-w-2xl mx-auto hover-lift"
                 data-aos="zoom-in"
                 data-aos-delay="200"
@@ -88,11 +85,10 @@ export default function StrukturOrganisasi() {
             </div>
           </div>
         </section>
-      )}{" "}
-      {/* Perangkat Desa */}
+      )}      {/* Perangkat Desa */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2
+          <h2 
             className="text-4xl font-bold text-gray-800 text-center mb-12"
             data-aos="fade-up"
             data-aos-duration="800"
@@ -137,11 +133,10 @@ export default function StrukturOrganisasi() {
             ))}
           </div>
         </div>
-      </section>{" "}
-      {/* Kepala Dusun */}
+      </section>      {/* Kepala Dusun */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2
+          <h2 
             className="text-4xl font-bold text-gray-800 text-center mb-12"
             data-aos="fade-up"
             data-aos-duration="800"
@@ -182,11 +177,10 @@ export default function StrukturOrganisasi() {
             ))}
           </div>
         </div>
-      </section>{" "}
-      {/* Organizational Chart */}
+      </section>      {/* Organizational Chart */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2
+          <h2 
             className="text-4xl font-bold text-gray-800 text-center mb-12"
             data-aos="fade-up"
             data-aos-duration="800"
@@ -194,7 +188,7 @@ export default function StrukturOrganisasi() {
             Bagan Organisasi
           </h2>
           <div className="max-w-6xl mx-auto">
-            <div
+            <div 
               className="bg-white rounded-xl shadow-lg p-4 md:p-8 hover-glow"
               data-aos="fade-up"
               data-aos-delay="200"
@@ -202,10 +196,8 @@ export default function StrukturOrganisasi() {
             >
               {/* Mobile Layout - Vertical Stack */}
               <div className="block md:hidden">
-                <div className="flex flex-col items-center space-y-4">
-                  {" "}
-                  {/* Kepala Desa */}
-                  <div
+                <div className="flex flex-col items-center space-y-4">                  {/* Kepala Desa */}
+                  <div 
                     className="bg-emerald-100 border-2 border-emerald-500 rounded-lg p-4 w-full max-w-xs text-center hover-scale"
                     data-aos="fade-down"
                     data-aos-delay="100"
@@ -215,19 +207,21 @@ export default function StrukturOrganisasi() {
                       {kepalaDesa?.name}
                     </p>
                   </div>
+
                   {/* Connection Line */}
-                  <div
+                  <div 
                     className="w-px h-6 bg-gray-300"
                     data-aos="fade-in"
                     data-aos-delay="200"
                   ></div>
+
                   {/* Sekretaris Desa */}
                   {(() => {
                     const sekretaris = perangkatDesa.find(
                       (member) => member.position === "Sekretaris Desa"
                     );
                     return sekretaris ? (
-                      <div
+                      <div 
                         className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 w-full max-w-xs text-center hover-scale"
                         data-aos="fade-up"
                         data-aos-delay="300"
@@ -241,10 +235,10 @@ export default function StrukturOrganisasi() {
                       </div>
                     ) : null;
                   })()}
+
                   {/* Connection Line */}
-                  <div className="w-px h-6 bg-gray-300"></div>{" "}
-                  {/* Kepala Urusan - Vertical */}
-                  <div
+                  <div className="w-px h-6 bg-gray-300"></div>                  {/* Kepala Urusan - Vertical */}
+                  <div 
                     className="space-y-3 w-full max-w-xs"
                     data-aos="fade-up"
                     data-aos-delay="500"
@@ -258,7 +252,7 @@ export default function StrukturOrganisasi() {
                           key={member.id}
                           className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 text-center hover-scale"
                           data-aos="zoom-in"
-                          data-aos-delay={600 + index * 100}
+                          data-aos-delay={600 + (index * 100)}
                         >
                           <h4 className="font-semibold text-blue-700 text-sm">
                             {member.position}
@@ -267,10 +261,10 @@ export default function StrukturOrganisasi() {
                         </div>
                       ))}
                   </div>
+
                   {/* Connection Line */}
-                  <div className="w-px h-6 bg-gray-300"></div>{" "}
-                  {/* Kepala Dusun - Vertical */}
-                  <div
+                  <div className="w-px h-6 bg-gray-300"></div>                  {/* Kepala Dusun - Vertical */}
+                  <div 
                     className="space-y-3 w-full max-w-xs"
                     data-aos="fade-up"
                     data-aos-delay="800"
@@ -280,7 +274,7 @@ export default function StrukturOrganisasi() {
                         key={member.id}
                         className="bg-purple-100 border-2 border-purple-500 rounded-lg p-4 text-center hover-scale"
                         data-aos="slide-up"
-                        data-aos-delay={900 + index * 100}
+                        data-aos-delay={900 + (index * 100)}
                       >
                         <h4 className="font-semibold text-purple-700 text-sm">
                           {member.position}

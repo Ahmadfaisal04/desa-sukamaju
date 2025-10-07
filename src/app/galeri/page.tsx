@@ -2,32 +2,21 @@
 
 import { useState } from "react";
 import { galleryData } from "@/data/gallery";
-import {
-  Calendar,
-  Tag,
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar, Tag, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GaleriPage() {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const categories = [
-    "Semua",
-    ...Array.from(new Set(galleryData.map((item) => item.category))),
-  ];
-
-  const filteredGallery =
-    selectedCategory === "Semua"
-      ? galleryData
-      : galleryData.filter((item) => item.category === selectedCategory);
+  const categories = ["Semua", ...Array.from(new Set(galleryData.map(item => item.category)))];
+  
+  const filteredGallery = selectedCategory === "Semua" 
+    ? galleryData 
+    : galleryData.filter(item => item.category === selectedCategory);
 
   const openLightbox = (imageId: string) => {
-    const index = filteredGallery.findIndex((item) => item.id === imageId);
+    const index = filteredGallery.findIndex(item => item.id === imageId);
     setCurrentImageIndex(index);
     setSelectedImage(imageId);
   };
@@ -43,32 +32,27 @@ export default function GaleriPage() {
   };
 
   const prevImage = () => {
-    const prevIndex =
-      (currentImageIndex - 1 + filteredGallery.length) % filteredGallery.length;
+    const prevIndex = (currentImageIndex - 1 + filteredGallery.length) % filteredGallery.length;
     setCurrentImageIndex(prevIndex);
     setSelectedImage(filteredGallery[prevIndex].id);
   };
 
-  const currentImage = selectedImage
-    ? filteredGallery.find((item) => item.id === selectedImage)
-    : null;
+  const currentImage = selectedImage ? filteredGallery.find(item => item.id === selectedImage) : null;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {" "}
-      {/* Hero Section */}
+    <div className="bg-gray-50 min-h-screen">      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1
+            <h1 
               className="text-4xl lg:text-6xl font-bold mb-6"
               data-aos="fade-down"
               data-aos-duration="1000"
             >
               Galeri Desa
             </h1>
-            <p
+            <p 
               className="text-xl lg:text-2xl text-emerald-100 leading-relaxed"
               data-aos="fade-up"
               data-aos-delay="300"
@@ -78,17 +62,16 @@ export default function GaleriPage() {
             </p>
           </div>
         </div>
-      </section>{" "}
-      {/* Search and Filter */}
+      </section>      {/* Search and Filter */}
       <section className="py-8 bg-white shadow-sm">
         <div className="container mx-auto px-4">
-          <div
+          <div 
             className="flex flex-col lg:flex-row gap-4 items-center justify-between"
             data-aos="fade-up"
             data-aos-duration="600"
           >
             {/* Search */}
-            <div
+            <div 
               className="relative flex-1 max-w-md"
               data-aos="fade-right"
               data-aos-delay="200"
@@ -102,7 +85,7 @@ export default function GaleriPage() {
             </div>
 
             {/* Category Filter */}
-            <div
+            <div 
               className="flex flex-wrap gap-2"
               data-aos="fade-left"
               data-aos-delay="400"
@@ -123,14 +106,13 @@ export default function GaleriPage() {
             </div>
           </div>
         </div>
-      </section>{" "}
-      {/* Gallery Grid */}
+      </section>      {/* Gallery Grid */}
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredGallery.map((item, index) => (
-              <div
-                key={item.id}
+              <div 
+                key={item.id} 
                 className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer hover-lift"
                 onClick={() => openLightbox(item.id)}
                 data-aos="fade-up"
@@ -147,9 +129,7 @@ export default function GaleriPage() {
                 <div className="p-4">
                   <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                     <Calendar className="w-4 h-4" />
-                    <span>
-                      {new Date(item.date).toLocaleDateString("id-ID")}
-                    </span>
+                    <span>{new Date(item.date).toLocaleDateString('id-ID')}</span>
                     <span>•</span>
                     <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
                       {item.category}
@@ -171,16 +151,13 @@ export default function GaleriPage() {
               <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                Tidak ada foto ditemukan
-              </h3>
-              <p className="text-gray-500">
-                Coba ubah kategori atau kata kunci pencarian
-              </p>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Tidak ada foto ditemukan</h3>
+              <p className="text-gray-500">Coba ubah kategori atau kata kunci pencarian</p>
             </div>
           )}
         </div>
       </section>
+
       {/* Lightbox Modal */}
       {selectedImage && currentImage && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
@@ -214,30 +191,22 @@ export default function GaleriPage() {
             {/* Image */}
             <div className="bg-white rounded-lg overflow-hidden">
               <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
-                <span className="text-emerald-700 font-semibold text-xl">
-                  Foto Galeri
-                </span>
+                <span className="text-emerald-700 font-semibold text-xl">Foto Galeri</span>
               </div>
-
+              
               {/* Image Info */}
               <div className="p-6">
                 <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
                   <Calendar className="w-4 h-4" />
-                  <span>
-                    {new Date(currentImage.date).toLocaleDateString("id-ID")}
-                  </span>
+                  <span>{new Date(currentImage.date).toLocaleDateString('id-ID')}</span>
                   <span>•</span>
                   <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
                     {currentImage.category}
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                  {currentImage.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {currentImage.description}
-                </p>
-
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">{currentImage.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{currentImage.description}</p>
+                
                 {filteredGallery.length > 1 && (
                   <div className="mt-4 text-sm text-gray-500">
                     {currentImageIndex + 1} dari {filteredGallery.length} foto
@@ -248,39 +217,28 @@ export default function GaleriPage() {
           </div>
         </div>
       )}
+
       {/* Statistics */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">
-            Statistik Galeri
-          </h2>
-
+          <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">Statistik Galeri</h2>
+          
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-white font-bold text-xl">
-                  {galleryData.length}
-                </span>
+                <span className="text-white font-bold text-xl">{galleryData.length}</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Total Foto
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800">Total Foto</h3>
             </div>
-
+            
             {categories.slice(1).map((category) => {
-              const count = galleryData.filter(
-                (item) => item.category === category
-              ).length;
+              const count = galleryData.filter(item => item.category === category).length;
               return (
                 <div key={category} className="text-center">
                   <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">
-                      {count}
-                    </span>
+                    <span className="text-white font-bold text-xl">{count}</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {category}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-800">{category}</h3>
                 </div>
               );
             })}

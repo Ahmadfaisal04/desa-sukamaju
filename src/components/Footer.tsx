@@ -26,24 +26,21 @@ const Footer = () => {
   useEffect(() => {
     const fetchKontakData = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`);
         const result = await response.json();
-
+        
         if (result.code === 200 && result.data) {
           setKontakData(result.data);
         }
       } catch (error) {
-        console.error("Error fetching kontak data:", error);
+        console.error('Error fetching kontak data:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchKontakData();
-  }, []);
-  return (
+  }, []);  return (
     <footer className="bg-gray-800 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -178,11 +175,11 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  Jl. Raya Desa No. 123
+                  Dusun Sukamaju, Desa Sukamaju
                   <br />
-                  Kecamatan Sukamaju
+                  Kecamatan Karossa
                   <br />
-                  Kabupaten Makmur 12345
+                  Kabupaten Mamuju Tengah, Kode Pos 91566
                 </p>
               </div>
               <div className="flex items-center space-x-3">

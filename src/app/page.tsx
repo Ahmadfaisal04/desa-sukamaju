@@ -380,8 +380,7 @@ export default function Home() {
                   Visi
                 </h3>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  "Terwujudnya Desa Sukamaju yang maju, mandiri, dan sejahtera
-                  berdasarkan gotong royong dan kearifan lokal"
+                  "Mewujudkan Masyarakat Adil dan Makmur"
                 </p>
               </div>{" "}
               <div
@@ -400,7 +399,7 @@ export default function Home() {
                   >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Meningkatkan kualitas pelayanan publik yang prima
+                      Mewujudkan tata Kelola pemerintahan yang baik
                     </span>
                   </li>
                   <li
@@ -410,7 +409,7 @@ export default function Home() {
                   >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Mengembangkan potensi ekonomi desa berbasis kearifan lokal
+                      Meningkatkan kualitas insfratuktur yang berkelanjutan
                     </span>
                   </li>
                   <li
@@ -420,7 +419,7 @@ export default function Home() {
                   >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Memperkuat persatuan dan kesatuan masyarakat
+                      Meningkatkan kualitas dan kuantitas Sumber Daya Manusia
                     </span>
                   </li>
                   <li
@@ -430,7 +429,19 @@ export default function Home() {
                   >
                     <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
                     <span className="text-gray-700">
-                      Melestarikan budaya dan tradisi lokal
+                      Meningkatkan Daya Saing Ekonomi berbasis inovasi dan
+                      potensi desa
+                    </span>
+                  </li>
+                  <li
+                    className="flex items-start space-x-3"
+                    data-aos="fade-right"
+                    data-aos-delay="900"
+                  >
+                    <div className="w-2 h-2 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-gray-700">
+                      Meningkatkan kualitas pelayanan dalam bidang Pendidikan,
+                      Kesehatan sosial dan hukum
                     </span>
                   </li>
                 </ul>
