@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Plus,
   Search,
@@ -18,13 +19,150 @@ import {
   Phone,
   Mail,
   MapPin,
+  X,
+  Upload,
 } from "lucide-react";
-import { organizationData } from "@/data/organization";
+
+interface AparatData {
+  id_aparat: string;
+  nama: string;
+  jabatan: string;
+  no_telepon: string;
+  email: string;
+  status: string;
+  periode_mulai: string;
+  periode_selesai: string;
+  foto: string;
+}
 
 export default function AdminOrganisasiPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPosition, setFilterPosition] = useState("Semua");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [aparatData, setAparatData] = useState<AparatData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addFormData, setAddFormData] = useState({
+    nama: "",
+    jabatan: "",
+    no_telepon: "",
+    email: "",
+    status: "aktif",
+    periode_mulai: "",
+    periode_selesai: "",
+    nama_dusun: "",
+    foto: null as File | null,
+  });
+  const [addLoading, setAddLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAparatData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+          setAparatData(result.data);
+        } else {
+          setError('Gagal mengambil data aparat');
+        }
+      } catch (error) {
+        console.error('Error fetching aparat data:', error);
+        setError('Terjadi kesalahan saat mengambil data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAparatData();
+  }, []);
+
+  // Function to refresh data after adding new member
+  const refreshData = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
+      const result = await response.json();
+      
+      if (result.code === 200 && result.data) {
+        setAparatData(result.data);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  };
+
+  // Handle add form submission
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('nama', addFormData.nama);
+      formData.append('jabatan', addFormData.jabatan);
+      formData.append('no_telepon', addFormData.no_telepon);
+      formData.append('email', addFormData.email);
+      formData.append('status', addFormData.status);
+      formData.append('periode_mulai', addFormData.periode_mulai);
+      formData.append('periode_selesai', addFormData.periode_selesai);
+      
+      // Tambahkan nama_dusun jika jabatan adalah Kepala Dusun
+      if (addFormData.jabatan === 'Kepala Dusun' && addFormData.nama_dusun) {
+        formData.append('nama_dusun', addFormData.nama_dusun);
+      }
+      
+      if (addFormData.foto) {
+        formData.append('foto', addFormData.foto);
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        // Reset form
+        setAddFormData({
+          nama: "",
+          jabatan: "",
+          no_telepon: "",
+          email: "",
+          status: "aktif",
+          periode_mulai: "",
+          periode_selesai: "",
+          nama_dusun: "",
+          foto: null,
+        });
+        
+        // Close modal
+        setShowAddModal(false);
+        
+        // Refresh data
+        await refreshData();
+        
+        alert('Anggota berhasil ditambahkan!');
+      } else {
+        alert(result.message || 'Gagal menambahkan anggota');
+      }
+    } catch (error) {
+      console.error('Error adding member:', error);
+      alert('Terjadi kesalahan saat menambahkan anggota');
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAddFormData(prev => ({ ...prev, foto: file }));
+    }
+  };
 
   const positions = [
     "Semua",
@@ -33,15 +171,16 @@ export default function AdminOrganisasiPage() {
     "Sekretaris",
     "Bendahara",
     "Kepala Urusan",
+    "Kepala Dusun",
     "Staf",
   ];
 
-  const filteredMembers = organizationData.filter((member) => {
+  const filteredMembers = aparatData.filter((member) => {
     const matchesSearch =
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.position.toLowerCase().includes(searchTerm.toLowerCase());
+      member.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPosition =
-      filterPosition === "Semua" || member.position === filterPosition;
+      filterPosition === "Semua" || member.jabatan === filterPosition;
     return matchesSearch && matchesPosition;
   });
 
@@ -57,9 +196,26 @@ export default function AdminOrganisasiPage() {
     setSelectedMembers(
       selectedMembers.length === filteredMembers.length
         ? []
-        : filteredMembers.map((member) => member.id)
+        : filteredMembers.map((member) => member.id_aparat)
     );
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+        <span className="ml-2 text-gray-600">Memuat data aparat...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-700">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -73,13 +229,13 @@ export default function AdminOrganisasiPage() {
             Kelola data anggota dan struktur organisasi Desa Sukamaju
           </p>
         </div>
-        <Link
-          href="/admin/organisasi/tambah"
+        <button
+          onClick={() => setShowAddModal(true)}
           className="inline-flex items-center justify-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors duration-200 shadow-sm"
         >
           <UserPlus className="w-5 h-5" />
           <span>Tambah Anggota</span>
-        </Link>
+        </button>
       </div>
 
       {/* Stats */}
@@ -91,7 +247,7 @@ export default function AdminOrganisasiPage() {
                 Total Anggota
               </p>
               <p className="text-3xl font-bold text-gray-900">
-                {organizationData.length}
+                {loading ? "..." : aparatData.length}
               </p>
             </div>
             <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
@@ -101,8 +257,8 @@ export default function AdminOrganisasiPage() {
         </div>
 
         {positions.slice(1, 4).map((position, index) => {
-          const count = organizationData.filter(
-            (member) => member.position === position
+          const count = aparatData.filter(
+            (member) => member.jabatan === position
           ).length;
           const colors = [
             { bg: "bg-blue-100", text: "text-blue-600" },
@@ -121,7 +277,9 @@ export default function AdminOrganisasiPage() {
                   <p className="text-sm font-medium text-gray-600 mb-1">
                     {position}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900">{count}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {loading ? "..." : count}
+                  </p>
                 </div>
                 <div
                   className={`w-12 h-12 ${color.bg} rounded-xl flex items-center justify-center`}
@@ -217,63 +375,76 @@ export default function AdminOrganisasiPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50">
+                <tr key={member.id_aparat} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <input
                       type="checkbox"
-                      checked={selectedMembers.includes(member.id)}
-                      onChange={() => handleSelectMember(member.id)}
+                      checked={selectedMembers.includes(member.id_aparat)}
+                      onChange={() => handleSelectMember(member.id_aparat)}
                       className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-4">                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-emerald-700 font-semibold text-sm">
-                          {member.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </span>
-                      </div>
+                    <div className="flex items-center space-x-4">
+                      {member.foto ? (
+                        <div className="w-12 h-12 relative rounded-full overflow-hidden flex-shrink-0">
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                            alt={member.nama}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-emerald-700 font-semibold text-sm">
+                            {member.nama
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </span>
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-medium text-gray-900">
-                          {member.name}
+                          {member.nama}
                         </h3>
-                        {member.description && (
-                          <p className="text-sm text-gray-500 line-clamp-1">
-                            {member.description}
-                          </p>
-                        )}
-                      </div>                    </div>
+                        <p className="text-sm text-gray-500">
+                          Periode: {member.periode_mulai} - {member.periode_selesai}
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div>
                       <span className="font-medium text-gray-900">
-                        {member.position}
+                        {member.jabatan}
                       </span>
-                      {member.description && (
-                        <p className="text-sm text-gray-500 line-clamp-1">
-                          {member.description}
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-500">
+                        Status: {member.status}
+                      </p>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <Phone className="w-3 h-3" />
-                        <span>-</span>
+                        <span>{member.no_telepon || "-"}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <Mail className="w-3 h-3" />
-                        <span>-</span>
+                        <span>{member.email || "-"}</span>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Aktif
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      member.status === 'aktif' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {member.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -285,7 +456,7 @@ export default function AdminOrganisasiPage() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <Link
-                        href={`/admin/organisasi/edit/${member.id}`}
+                        href={`/admin/organisasi/edit/${member.id_aparat}`}
                         className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-200"
                         title="Edit"
                       >
@@ -333,7 +504,7 @@ export default function AdminOrganisasiPage() {
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500">
                 Menampilkan {filteredMembers.length} dari{" "}
-                {organizationData.length} anggota
+                {aparatData.length} anggota
               </div>
               <div className="flex items-center space-x-2">
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
@@ -350,6 +521,246 @@ export default function AdminOrganisasiPage() {
           </div>
         )}
       </div>
+
+      {/* Add Member Modal */}
+      {showAddModal && (
+        <div 
+          className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+            }
+          }}
+        >
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Tambah Anggota Baru</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleAddSubmit} className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nama */}
+                <div>
+                  <label htmlFor="nama" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nama Lengkap *
+                  </label>
+                  <input
+                    type="text"
+                    id="nama"
+                    required
+                    value={addFormData.nama}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, nama: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Masukkan nama lengkap"
+                  />
+                </div>
+
+                {/* Jabatan */}
+                <div>
+                  <label htmlFor="jabatan" className="block text-sm font-medium text-gray-700 mb-2">
+                    Jabatan *
+                  </label>
+                  <select
+                    id="jabatan"
+                    required
+                    value={addFormData.jabatan}
+                    onChange={(e) => {
+                      setAddFormData(prev => ({ 
+                        ...prev, 
+                        jabatan: e.target.value,
+                        nama_dusun: e.target.value !== 'Kepala Dusun' ? '' : prev.nama_dusun
+                      }))
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option value="">Pilih Jabatan</option>
+                    <option value="Kepala Desa">Kepala Desa</option>
+                    <option value="Wakil Kepala Desa">Wakil Kepala Desa</option>
+                    <option value="Sekretaris">Sekretaris</option>
+                    <option value="Bendahara">Bendahara</option>
+                    <option value="Kepala Urusan">Kepala Urusan</option>
+                    <option value="Kepala Dusun">Kepala Dusun</option>
+                    <option value="Staf">Staf</option>
+                  </select>
+                </div>
+
+                {/* Nama Dusun - Conditional */}
+                {addFormData.jabatan === 'Kepala Dusun' && (
+                  <div>
+                    <label htmlFor="nama_dusun" className="block text-sm font-medium text-gray-700 mb-2">
+                      Nama Dusun *
+                    </label>
+                    <select
+                      id="nama_dusun"
+                      required
+                      value={addFormData.nama_dusun}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, nama_dusun: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Pilih Dusun</option>
+                      <option value="Dusun Makmur">Dusun Makmur</option>
+                      <option value="Dusun Sejahtera">Dusun Sejahtera</option>
+                      <option value="Dusun Bahagia">Dusun Bahagia</option>
+                      <option value="Dusun Maju">Dusun Maju</option>
+                      <option value="Dusun Sentosa">Dusun Sentosa</option>
+                      <option value="Dusun Harmoni">Dusun Harmoni</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* No Telepon */}
+                <div>
+                  <label htmlFor="no_telepon" className="block text-sm font-medium text-gray-700 mb-2">
+                    No. Telepon *
+                  </label>
+                  <input
+                    type="tel"
+                    id="no_telepon"
+                    required
+                    value={addFormData.no_telepon}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, no_telepon: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="08xxxxxxxxxx"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={addFormData.email}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="nama@sukamaju.co.id"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    id="status"
+                    required
+                    value={addFormData.status}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option value="aktif">Aktif</option>
+                    <option value="tidak aktif">Tidak Aktif</option>
+                  </select>
+                </div>
+
+                {/* Periode Mulai */}
+                <div>
+                  <label htmlFor="periode_mulai" className="block text-sm font-medium text-gray-700 mb-2">
+                    Periode Mulai *
+                  </label>
+                  <input
+                    type="number"
+                    id="periode_mulai"
+                    required
+                    min="1900"
+                    max="2100"
+                    value={addFormData.periode_mulai}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, periode_mulai: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="2023"
+                  />
+                </div>
+
+                {/* Periode Selesai */}
+                <div>
+                  <label htmlFor="periode_selesai" className="block text-sm font-medium text-gray-700 mb-2">
+                    Periode Selesai *
+                  </label>
+                  <input
+                    type="number"
+                    id="periode_selesai"
+                    required
+                    min="1900"
+                    max="2100"
+                    value={addFormData.periode_selesai}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, periode_selesai: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="2029"
+                  />
+                </div>
+              </div>
+
+              {/* Foto */}
+              <div>
+                <label htmlFor="foto" className="block text-sm font-medium text-gray-700 mb-2">
+                  Foto Profil
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors duration-200">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 mb-2">
+                    Klik untuk upload foto atau drag & drop
+                  </p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Format: JPG, PNG, GIF (Max: 5MB)
+                  </p>
+                  <input
+                    type="file"
+                    id="foto"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="foto"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer transition-colors duration-200"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Pilih File
+                  </label>
+                  {addFormData.foto && (
+                    <p className="text-sm text-emerald-600 mt-2">
+                      File terpilih: {addFormData.foto.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={addLoading}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {addLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  <span>{addLoading ? 'Menyimpan...' : 'Simpan'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

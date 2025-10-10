@@ -1,21 +1,83 @@
-import { organizationData } from "@/data/organization";
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Mail, Phone } from "lucide-react";
 
-export default function StrukturOrganisasi() {
-  const kepalaDesa = organizationData.find(
-    (member) => member.position === "Kepala Desa"
-  );
-  const perangkatDesa = organizationData.filter(
-    (member) =>
-      member.position !== "Kepala Desa" &&
-      !member.position.includes("Kepala Dusun")
-  );
-  const kepalaDusun = organizationData.filter((member) =>
-    member.position.includes("Kepala Dusun")
-  );
+interface AparatData {
+  id_aparat: string;
+  nama: string;
+  jabatan: string;
+  no_telepon: string;
+  email: string;
+  status: string;
+  periode_mulai: string;
+  periode_selesai: string;
+  foto: string;
+}
 
+export default function StrukturOrganisasi() {
+  const [aparatData, setAparatData] = useState<AparatData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAparatData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
+        const result = await response.json();
+        
+        if (result.code === 200 && result.data) {
+          setAparatData(result.data);
+        } else {
+          setError('Gagal mengambil data aparat');
+        }
+      } catch (error) {
+        console.error('Error fetching aparat data:', error);
+        setError('Terjadi kesalahan saat mengambil data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAparatData();
+  }, []);
+
+  const kepalaDesa = aparatData.find(
+    (member) => member.jabatan === "Kepala Desa"
+  );
+  const perangkatDesa = aparatData.filter(
+    (member) =>
+      member.jabatan !== "Kepala Desa" &&
+      !member.jabatan.includes("Kepala Dusun")
+  );
+  const kepalaDusun = aparatData.filter((member) =>
+    member.jabatan.includes("Kepala Dusun")
+  );
   return (
-    <div className="bg-gray-50 min-h-screen">      {/* Hero Section */}
+    <div className="bg-gray-50 min-h-screen">
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <span className="ml-4 text-gray-600 text-lg">Memuat data organisasi...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="flex items-center justify-center py-20">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+            <p className="text-red-700 text-center">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      {!loading && !error && (
+        <>
+          {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -57,29 +119,49 @@ export default function StrukturOrganisasi() {
                 data-aos-delay="200"
                 data-aos-duration="800"
               >
-                <div className="w-32 h-32 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <span className="text-emerald-700 font-semibold text-lg">
-                    Foto
-                  </span>
-                </div>
+                {kepalaDesa.foto ? (
+                  <div className="w-32 h-32 relative rounded-full mx-auto mb-6 overflow-hidden">
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${kepalaDesa.foto}`}
+                      alt={kepalaDesa.nama}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <span className="text-emerald-700 font-semibold text-lg">
+                      {kepalaDesa.nama.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                    </span>
+                  </div>
+                )}
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  {kepalaDesa.name}
+                  {kepalaDesa.nama}
                 </h3>
                 <p className="text-lg text-emerald-600 font-semibold mb-4">
-                  {kepalaDesa.position}
+                  {kepalaDesa.jabatan}
                 </p>
-                <p className="text-gray-700 leading-relaxed max-w-lg mx-auto">
-                  {kepalaDesa.description}
+                <p className="text-gray-700 leading-relaxed max-w-lg mx-auto mb-2">
+                  Periode: {kepalaDesa.periode_mulai} - {kepalaDesa.periode_selesai}
+                </p>
+                <p className="text-gray-600 text-sm mb-6">
+                  Status: {kepalaDesa.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
                 </p>
                 <div className="flex justify-center space-x-4 mt-6">
-                  <button className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300">
+                  <a
+                    href={`mailto:${kepalaDesa.email}`}
+                    className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+                  >
                     <Mail className="w-4 h-4" />
                     <span>Email</span>
-                  </button>
-                  <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                  </a>
+                  <a
+                    href={`tel:${kepalaDesa.no_telepon}`}
+                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                  >
                     <Phone className="w-4 h-4" />
                     <span>Telepon</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -99,34 +181,56 @@ export default function StrukturOrganisasi() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {perangkatDesa.map((member, index) => (
               <div
-                key={member.id}
+                key={member.id_aparat}
                 className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
                 data-aos="fade-up"
                 data-aos-delay={index * 100}
                 data-aos-duration="600"
               >
-                <div className="aspect-square bg-gradient-to-br from-blue-200 to-purple-200 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
-                    <span className="text-blue-700 font-semibold">Foto</span>
+                {member.foto ? (
+                  <div className="aspect-square relative overflow-hidden">
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                      alt={member.nama}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="aspect-square bg-gradient-to-br from-blue-200 to-purple-200 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
+                      <span className="text-blue-700 font-semibold text-lg">
+                        {member.nama.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
-                    {member.name}
+                    {member.nama}
                   </h3>
                   <p className="text-emerald-600 font-semibold mb-3">
-                    {member.position}
+                    {member.jabatan}
                   </p>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                    {member.description}
+                  <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    Periode: {member.periode_mulai} - {member.periode_selesai}
+                  </p>
+                  <p className="text-gray-500 text-xs mb-4">
+                    Status: {member.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
                   </p>
                   <div className="flex space-x-2">
-                    <button className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors duration-300">
+                    <a
+                      href={`mailto:${member.email}`}
+                      className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors duration-300"
+                    >
                       <Mail className="w-4 h-4" />
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-300">
+                    </a>
+                    <a
+                      href={`tel:${member.no_telepon}`}
+                      className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-300"
+                    >
                       <Phone className="w-4 h-4" />
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -147,31 +251,53 @@ export default function StrukturOrganisasi() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {kepalaDusun.map((member, index) => (
               <div
-                key={member.id}
+                key={member.id_aparat}
                 className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 border border-emerald-100 text-center hover:shadow-lg transition-all duration-300 hover-lift"
                 data-aos="zoom-in"
                 data-aos-delay={index * 150}
                 data-aos-duration="700"
               >
-                <div className="w-24 h-24 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <span className="text-emerald-700 font-semibold">Foto</span>
-                </div>
+                {member.foto ? (
+                  <div className="w-24 h-24 relative rounded-full mx-auto mb-6 overflow-hidden">
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                      alt={member.nama}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-br from-emerald-200 to-teal-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <span className="text-emerald-700 font-semibold">
+                      {member.nama.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                    </span>
+                  </div>
+                )}
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {member.name}
+                  {member.nama}
                 </h3>
                 <p className="text-emerald-600 font-semibold mb-3">
-                  {member.position}
+                  {member.jabatan}
                 </p>
-                <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                  {member.description}
+                <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                  Periode: {member.periode_mulai} - {member.periode_selesai}
+                </p>
+                <p className="text-gray-600 text-xs mb-4">
+                  Status: {member.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
                 </p>
                 <div className="flex justify-center space-x-2">
-                  <button className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors duration-300">
+                  <a
+                    href={`mailto:${member.email}`}
+                    className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors duration-300"
+                  >
                     <Mail className="w-4 h-4" />
-                  </button>
-                  <button className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-300">
+                  </a>
+                  <a
+                    href={`tel:${member.no_telepon}`}
+                    className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-300"
+                  >
                     <Phone className="w-4 h-4" />
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
@@ -204,7 +330,7 @@ export default function StrukturOrganisasi() {
                   >
                     <h3 className="font-bold text-emerald-700">Kepala Desa</h3>
                     <p className="text-sm text-emerald-600">
-                      {kepalaDesa?.name}
+                      {kepalaDesa?.nama}
                     </p>
                   </div>
 
@@ -218,7 +344,7 @@ export default function StrukturOrganisasi() {
                   {/* Sekretaris Desa */}
                   {(() => {
                     const sekretaris = perangkatDesa.find(
-                      (member) => member.position === "Sekretaris Desa"
+                      (member) => member.jabatan === "Sekretaris"
                     );
                     return sekretaris ? (
                       <div 
@@ -227,10 +353,10 @@ export default function StrukturOrganisasi() {
                         data-aos-delay="300"
                       >
                         <h4 className="font-semibold text-blue-700">
-                          {sekretaris.position}
+                          {sekretaris.jabatan}
                         </h4>
                         <p className="text-sm text-blue-600">
-                          {sekretaris.name}
+                          {sekretaris.nama}
                         </p>
                       </div>
                     ) : null;
@@ -245,19 +371,19 @@ export default function StrukturOrganisasi() {
                   >
                     {perangkatDesa
                       .filter((member) =>
-                        member.position.includes("Kepala Urusan")
+                        member.jabatan.includes("Kepala Urusan")
                       )
                       .map((member, index) => (
                         <div
-                          key={member.id}
+                          key={member.id_aparat}
                           className="bg-blue-100 border-2 border-blue-500 rounded-lg p-4 text-center hover-scale"
                           data-aos="zoom-in"
                           data-aos-delay={600 + (index * 100)}
                         >
                           <h4 className="font-semibold text-blue-700 text-sm">
-                            {member.position}
+                            {member.jabatan}
                           </h4>
-                          <p className="text-sm text-blue-600">{member.name}</p>
+                          <p className="text-sm text-blue-600">{member.nama}</p>
                         </div>
                       ))}
                   </div>
@@ -271,15 +397,15 @@ export default function StrukturOrganisasi() {
                   >
                     {kepalaDusun.map((member, index) => (
                       <div
-                        key={member.id}
+                        key={member.id_aparat}
                         className="bg-purple-100 border-2 border-purple-500 rounded-lg p-4 text-center hover-scale"
                         data-aos="slide-up"
                         data-aos-delay={900 + (index * 100)}
                       >
                         <h4 className="font-semibold text-purple-700 text-sm">
-                          {member.position}
+                          {member.jabatan}
                         </h4>
-                        <p className="text-sm text-purple-600">{member.name}</p>
+                        <p className="text-sm text-purple-600">{member.nama}</p>
                       </div>
                     ))}
                   </div>
@@ -296,7 +422,7 @@ export default function StrukturOrganisasi() {
                         Kepala Desa
                       </h3>
                       <p className="text-sm text-emerald-600">
-                        {kepalaDesa?.name}
+                        {kepalaDesa?.nama}
                       </p>
                     </div>
                   </div>
@@ -309,12 +435,12 @@ export default function StrukturOrganisasi() {
                   {/* Perangkat Desa */}
                   <div className="grid grid-cols-4 gap-4 mb-8">
                     {perangkatDesa.map((member) => (
-                      <div key={member.id} className="text-center">
+                      <div key={member.id_aparat} className="text-center">
                         <div className="bg-blue-100 border-2 border-blue-500 rounded-lg p-3">
                           <h4 className="font-semibold text-blue-700 text-sm">
-                            {member.position}
+                            {member.jabatan}
                           </h4>
-                          <p className="text-xs text-blue-600">{member.name}</p>
+                          <p className="text-xs text-blue-600">{member.nama}</p>
                         </div>
                       </div>
                     ))}
@@ -328,13 +454,13 @@ export default function StrukturOrganisasi() {
                   {/* Kepala Dusun */}
                   <div className="grid grid-cols-3 gap-4">
                     {kepalaDusun.map((member) => (
-                      <div key={member.id} className="text-center">
+                      <div key={member.id_aparat} className="text-center">
                         <div className="bg-purple-100 border-2 border-purple-500 rounded-lg p-3">
                           <h4 className="font-semibold text-purple-700 text-sm">
-                            {member.position}
+                            {member.jabatan}
                           </h4>
                           <p className="text-xs text-purple-600">
-                            {member.name}
+                            {member.nama}
                           </p>
                         </div>
                       </div>
@@ -346,6 +472,8 @@ export default function StrukturOrganisasi() {
           </div>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }
