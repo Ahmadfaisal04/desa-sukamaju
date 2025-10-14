@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import {
   Plus,
@@ -9,11 +8,9 @@ import {
   Filter,
   Edit3,
   Trash2,
-  Eye,
   Calendar,
   User,
   Tag,
-  MoreVertical,
   Users,
   UserPlus,
   Phone,
@@ -43,6 +40,8 @@ export default function AdminOrganisasiPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<AparatData | null>(null);
   const [addFormData, setAddFormData] = useState({
     nama: "",
     jabatan: "",
@@ -54,7 +53,19 @@ export default function AdminOrganisasiPage() {
     nama_dusun: "",
     foto: null as File | null,
   });
+  const [editFormData, setEditFormData] = useState({
+    nama: "",
+    jabatan: "",
+    no_telepon: "",
+    email: "",
+    status: "aktif",
+    periode_mulai: "",
+    periode_selesai: "",
+    nama_dusun: "",
+    foto: null as File | null,
+  });
   const [addLoading, setAddLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     const fetchAparatData = async () => {
@@ -63,10 +74,12 @@ export default function AdminOrganisasiPage() {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
         const result = await response.json();
         
-        if (result.code === 200 && result.data) {
-          setAparatData(result.data);
+        if (result.code === 200) {
+          // Set data even if it's empty array
+          setAparatData(result.data || []);
+          setError(null); // Clear any previous errors
         } else {
-          setError('Gagal mengambil data aparat');
+          setError(result.message || 'Gagal mengambil data aparat');
         }
       } catch (error) {
         console.error('Error fetching aparat data:', error);
@@ -85,11 +98,114 @@ export default function AdminOrganisasiPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
       const result = await response.json();
       
-      if (result.code === 200 && result.data) {
-        setAparatData(result.data);
+      if (result.code === 200) {
+        setAparatData(result.data || []);
+        setError(null); // Clear any errors
+      } else {
+        setError(result.message || 'Gagal mengambil data aparat');
       }
     } catch (error) {
       console.error('Error refreshing data:', error);
+      setError('Terjadi kesalahan saat mengambil data');
+    }
+  };
+
+  // Function to delete member
+  const handleDeleteMember = async (id_aparat: string, nama: string) => {
+    const confirmDelete = window.confirm(
+      `Apakah Anda yakin ingin menghapus anggota "${nama}"? Tindakan ini tidak dapat dibatalkan.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat/${id_aparat}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        // Remove from selected members if it was selected
+        setSelectedMembers(prev => prev.filter(id => id !== id_aparat));
+        
+        // Refresh data
+        await refreshData();
+        
+        alert('Anggota berhasil dihapus!');
+      } else {
+        alert(result.message || 'Gagal menghapus anggota');
+      }
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert('Terjadi kesalahan saat menghapus anggota');
+    }
+  };
+
+  // Function to delete multiple selected members
+  const handleDeleteSelected = async () => {
+    if (selectedMembers.length === 0) return;
+
+    const confirmDelete = window.confirm(
+      `Apakah Anda yakin ingin menghapus ${selectedMembers.length} anggota yang dipilih? Tindakan ini tidak dapat dibatalkan.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      // Send bulk delete request with array of IDs
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/bulk/aparat`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id_aparat: selectedMembers
+        }),
+      });
+
+      // Check if response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response bukan format JSON');
+      }
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        // Clear selected members
+        setSelectedMembers([]);
+        
+        // Refresh data
+        await refreshData();
+        
+        alert(result.message || `${selectedMembers.length} anggota berhasil dihapus!`);
+      } else {
+        alert(result.message || 'Gagal menghapus anggota yang dipilih');
+      }
+    } catch (error) {
+      console.error('Error deleting selected members:', error);
+      
+      // More specific error messages
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (error instanceof TypeError && errorMessage.includes('fetch')) {
+        alert('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else if (errorMessage.includes('404')) {
+        alert('Endpoint bulk delete tidak ditemukan. Hubungi administrator.');
+      } else if (errorMessage.includes('JSON')) {
+        alert('Server mengembalikan response yang tidak valid.');
+      } else {
+        alert('Terjadi kesalahan saat menghapus anggota: ' + errorMessage);
+      }
     }
   };
 
@@ -156,11 +272,112 @@ export default function AdminOrganisasiPage() {
     }
   };
 
+  // Handle edit form submission
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    
+    setEditLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('nama', editFormData.nama);
+      formData.append('jabatan', editFormData.jabatan);
+      formData.append('no_telepon', editFormData.no_telepon);
+      formData.append('email', editFormData.email);
+      formData.append('status', editFormData.status);
+      formData.append('periode_mulai', editFormData.periode_mulai);
+      formData.append('periode_selesai', editFormData.periode_selesai);
+      
+      // Tambahkan nama_dusun jika jabatan adalah Kepala Dusun
+      if (editFormData.jabatan === 'Kepala Dusun' && editFormData.nama_dusun) {
+        formData.append('nama_dusun', editFormData.nama_dusun);
+      }
+      
+      // Handle foto - jika ada file baru gunakan file baru, jika tidak gunakan foto lama
+      if (editFormData.foto) {
+        // Upload file baru
+        formData.append('foto', editFormData.foto);
+      } else if (editingMember.foto) {
+        // Gunakan foto lama dengan mendownload dan mengupload ulang
+        try {
+          const photoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editingMember.foto}`);
+          const photoBlob = await photoResponse.blob();
+          const photoFile = new File([photoBlob], editingMember.foto, { type: photoBlob.type });
+          formData.append('foto', photoFile);
+        } catch (photoError) {
+          console.warn('Gagal mengambil foto lama, melanjutkan tanpa foto:', photoError);
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat/${editingMember.id_aparat}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        // Close modal and reset
+        setShowEditModal(false);
+        setEditingMember(null);
+        setEditFormData({
+          nama: "",
+          jabatan: "",
+          no_telepon: "",
+          email: "",
+          status: "aktif",
+          periode_mulai: "",
+          periode_selesai: "",
+          nama_dusun: "",
+          foto: null,
+        });
+        
+        // Refresh data
+        await refreshData();
+        
+        alert('Data anggota berhasil diperbarui!');
+      } else {
+        alert(result.message || 'Gagal memperbarui data anggota');
+      }
+    } catch (error) {
+      console.error('Error updating member:', error);
+      alert('Terjadi kesalahan saat memperbarui data anggota');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Handle open edit modal
+  const handleEditMember = (member: AparatData) => {
+    setEditingMember(member);
+    setEditFormData({
+      nama: member.nama,
+      jabatan: member.jabatan,
+      no_telepon: member.no_telepon,
+      email: member.email,
+      status: member.status,
+      periode_mulai: member.periode_mulai,
+      periode_selesai: member.periode_selesai,
+      nama_dusun: member.jabatan.includes('Kepala Dusun') ? member.jabatan.replace('Kepala Dusun ', '') : "",
+      foto: null,
+    });
+    setShowEditModal(true);
+  };
+
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setAddFormData(prev => ({ ...prev, foto: file }));
+    }
+  };
+
+  // Handle edit file input change
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditFormData(prev => ({ ...prev, foto: file }));
     }
   };
 
@@ -330,7 +547,10 @@ export default function AdminOrganisasiPage() {
                 <span className="text-sm text-gray-600">
                   {selectedMembers.length} dipilih
                 </span>
-                <button className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
+                <button 
+                  onClick={handleDeleteSelected}
+                  className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                >
                   Hapus Terpilih
                 </button>
               </div>
@@ -450,26 +670,18 @@ export default function AdminOrganisasiPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button
-                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                        title="Lihat Detail"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <Link
-                        href={`/admin/organisasi/edit/${member.id_aparat}`}
+                        onClick={() => handleEditMember(member)}
                         className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-200"
                         title="Edit"
                       >
                         <Edit3 className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <button
+                        onClick={() => handleDeleteMember(member.id_aparat, member.nama)}
                         className="p-2 text-gray-400 hover:text-red-600 transition-colors duration-200"
                         title="Hapus"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -488,13 +700,13 @@ export default function AdminOrganisasiPage() {
             <p className="text-gray-500 mb-4">
               Coba ubah filter atau kata kunci pencarian
             </p>
-            <Link
-              href="/admin/organisasi/tambah"
+            <button
+              onClick={() => setShowAddModal(true)}
               className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-200"
             >
               <UserPlus className="w-4 h-4" />
               <span>Tambah Anggota Pertama</span>
-            </Link>
+            </button>
           </div>
         )}
 
@@ -755,6 +967,275 @@ export default function AdminOrganisasiPage() {
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   )}
                   <span>{addLoading ? 'Menyimpan...' : 'Simpan'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {showEditModal && editingMember && (
+        <div 
+          className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowEditModal(false);
+              setEditingMember(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Edit Anggota</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingMember(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nama */}
+                <div>
+                  <label htmlFor="edit_nama" className="block text-sm font-medium text-gray-700 mb-2">
+                    Nama Lengkap *
+                  </label>
+                  <input
+                    type="text"
+                    id="edit_nama"
+                    required
+                    value={editFormData.nama}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, nama: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Masukkan nama lengkap"
+                  />
+                </div>
+
+                {/* Jabatan */}
+                <div>
+                  <label htmlFor="edit_jabatan" className="block text-sm font-medium text-gray-700 mb-2">
+                    Jabatan *
+                  </label>
+                  <select
+                    id="edit_jabatan"
+                    required
+                    value={editFormData.jabatan}
+                    onChange={(e) => {
+                      setEditFormData(prev => ({ 
+                        ...prev, 
+                        jabatan: e.target.value,
+                        nama_dusun: e.target.value !== 'Kepala Dusun' ? '' : prev.nama_dusun
+                      }))
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option value="">Pilih Jabatan</option>
+                    <option value="Kepala Desa">Kepala Desa</option>
+                    <option value="Wakil Kepala Desa">Wakil Kepala Desa</option>
+                    <option value="Sekretaris">Sekretaris</option>
+                    <option value="Bendahara">Bendahara</option>
+                    <option value="Kepala Urusan">Kepala Urusan</option>
+                    <option value="Kepala Dusun">Kepala Dusun</option>
+                    <option value="Staf">Staf</option>
+                  </select>
+                </div>
+
+                {/* Nama Dusun - Conditional */}
+                {editFormData.jabatan === 'Kepala Dusun' && (
+                  <div>
+                    <label htmlFor="edit_nama_dusun" className="block text-sm font-medium text-gray-700 mb-2">
+                      Nama Dusun *
+                    </label>
+                    <select
+                      id="edit_nama_dusun"
+                      required
+                      value={editFormData.nama_dusun}
+                      onChange={(e) => setEditFormData(prev => ({ ...prev, nama_dusun: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Pilih Dusun</option>
+                      <option value="Dusun Makmur">Dusun Makmur</option>
+                      <option value="Dusun Sejahtera">Dusun Sejahtera</option>
+                      <option value="Dusun Bahagia">Dusun Bahagia</option>
+                      <option value="Dusun Maju">Dusun Maju</option>
+                      <option value="Dusun Sentosa">Dusun Sentosa</option>
+                      <option value="Dusun Harmoni">Dusun Harmoni</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* No Telepon */}
+                <div>
+                  <label htmlFor="edit_no_telepon" className="block text-sm font-medium text-gray-700 mb-2">
+                    No. Telepon *
+                  </label>
+                  <input
+                    type="tel"
+                    id="edit_no_telepon"
+                    required
+                    value={editFormData.no_telepon}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, no_telepon: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="08xxxxxxxxxx"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label htmlFor="edit_email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="edit_email"
+                    required
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="nama@sukamaju.co.id"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label htmlFor="edit_status" className="block text-sm font-medium text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    id="edit_status"
+                    required
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option value="aktif">Aktif</option>
+                    <option value="tidak aktif">Tidak Aktif</option>
+                  </select>
+                </div>
+
+                {/* Periode Mulai */}
+                <div>
+                  <label htmlFor="edit_periode_mulai" className="block text-sm font-medium text-gray-700 mb-2">
+                    Periode Mulai *
+                  </label>
+                  <input
+                    type="number"
+                    id="edit_periode_mulai"
+                    required
+                    min="1900"
+                    max="2100"
+                    value={editFormData.periode_mulai}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, periode_mulai: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="2023"
+                  />
+                </div>
+
+                {/* Periode Selesai */}
+                <div>
+                  <label htmlFor="edit_periode_selesai" className="block text-sm font-medium text-gray-700 mb-2">
+                    Periode Selesai *
+                  </label>
+                  <input
+                    type="number"
+                    id="edit_periode_selesai"
+                    required
+                    min="1900"
+                    max="2100"
+                    value={editFormData.periode_selesai}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, periode_selesai: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="2029"
+                  />
+                </div>
+              </div>
+
+              {/* Current Photo Display */}
+              {editingMember.foto && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Foto Saat Ini
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-20 h-20 relative rounded-lg overflow-hidden border border-gray-300">
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editingMember.foto}`}
+                        alt={editingMember.nama}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Foto profil saat ini
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Foto */}
+              <div>
+                <label htmlFor="edit_foto" className="block text-sm font-medium text-gray-700 mb-2">
+                  Update Foto Profil
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors duration-200">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 mb-2">
+                    Klik untuk upload foto baru atau drag & drop
+                  </p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Format: JPG, PNG, GIF (Max: 5MB) - Kosongkan jika tidak ingin mengubah foto
+                  </p>
+                  <input
+                    type="file"
+                    id="edit_foto"
+                    accept="image/*"
+                    onChange={handleEditFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="edit_foto"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 cursor-pointer transition-colors duration-200"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Pilih File Baru
+                  </label>
+                  {editFormData.foto && (
+                    <p className="text-sm text-emerald-600 mt-2">
+                      File terpilih: {editFormData.foto.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingMember(null);
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {editLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  <span>{editLoading ? 'Memperbarui...' : 'Perbarui'}</span>
                 </button>
               </div>
             </form>
