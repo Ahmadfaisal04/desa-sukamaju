@@ -78,12 +78,12 @@ const StatCard = ({
         className={`w-16 h-16 ${color} rounded-full mx-auto mb-4 flex items-center justify-center`}
       >
         <Icon className="w-8 h-8 text-white" />
-      </div>
+      </div>{" "}
       <h3
         className={`text-2xl font-bold ${color.replace("bg-", "text-")} mb-2`}
       >
         {label === "Luas Wilayah"
-          ? "15,5 km²"
+          ? "2,350.00 Ha"
           : label === "Tahun Berdiri"
           ? "2004"
           : animatedValue.toLocaleString("id-ID")}
@@ -377,15 +377,19 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Utara:</h4>
-                <p className="text-gray-600">Desa Karossa</p>
+                <p className="text-gray-600">
+                  Desa Lembah Hopo dan Desa Karossa
+                </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Selatan:</h4>
-                <p className="text-gray-600">Desa Lara</p>
+                <p className="text-gray-600">Desa Lara dan Desa Kambunong</p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Timur:</h4>
-                <p className="text-gray-600">Desa Lembah Hopo</p>
+                <p className="text-gray-600">
+                  Desa Lembah Hopo dan Kabupaten Palopo
+                </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-700 mb-2">Barat:</h4>
@@ -501,40 +505,58 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             data-aos="fade-up"
             data-aos-duration="600"
           >
-            Potensi Desa
+            Potensi Desa Sukamaju
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Introduction */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div
+              className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-xl border border-emerald-100 text-center"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Desa Sukamaju memiliki potensi yang sangat besar baik sumber
+                daya alam, sumber daya pembangunan, sumber daya sosial budaya,
+                maupun kelembagaan/organisasi. Sebagian besar wilayahnya adalah
+                tanah gambut dengan kedalaman mencapai 1 meter yang sangat cocok
+                untuk perkebunan kelapa sawit.
+              </p>
+            </div>
+          </div>
+
+          {/* Main Potential Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div
               className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
               data-aos="fade-up"
               data-aos-delay="200"
             >
               <div className="w-16 h-16 bg-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Wheat className="w-8 h-8 text-white" />
+                <TreePine className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">
-                Pertanian
+                Sumber Daya Alam
               </h3>
               <p className="text-gray-600 text-center">
-                Lahan pertanian seluas 8.5 km² dengan hasil padi, jagung, dan
-                sayuran berkualitas tinggi
+                Kelapa sawit 38,81%, hutan 48,59%, tambak 3,75%, dan berbagai
+                tanaman hortikultura lainnya
               </p>
-            </div>{" "}
+            </div>
             <div
               className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <div className="w-16 h-16 bg-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <TreePine className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">
-                Kehutanan
+                Sumber Daya Manusia
               </h3>
               <p className="text-gray-600 text-center">
-                Hutan konservasi seluas 3.2 km² sebagai paru-paru desa dan
-                sumber mata air
+                Penduduk usia produktif yang tinggi dengan budaya gotong royong
+                dan musyawarah yang kuat
               </p>
             </div>
             <div
@@ -542,15 +564,15 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               data-aos="fade-up"
               data-aos-delay="400"
             >
-              <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Building className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">
-                Pariwisata
+                Kelembagaan
               </h3>
               <p className="text-gray-600 text-center">
-                Objek wisata alam dan budaya yang menarik wisatawan lokal dan
-                mancanegara
+                Hubungan harmonis antara pemerintah desa, LKMD, BPD, dan
+                berbagai kelompok masyarakat
               </p>
             </div>
             <div
@@ -558,16 +580,195 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               data-aos="fade-up"
               data-aos-delay="500"
             >
-              <div className="w-16 h-16 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 bg-orange-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <School className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3 text-center">
-                Pendidikan
+                Sosial Budaya
               </h3>
               <p className="text-gray-600 text-center">
-                Fasilitas pendidikan lengkap dari TK hingga SMA dengan kualitas
-                terbaik
+                Kehidupan demokratis, toleransi antar suku dan ras dalam bingkai
+                Bhinneka Tunggal Ika
               </p>
+            </div>{" "}
+          </div>
+
+          {/* Detailed Land Usage */}
+          <div className="max-w-6xl mx-auto mb-16">
+            <h3
+              className="text-3xl font-bold text-gray-800 text-center mb-8"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              Persentase Penggunaan Lahan
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[
+                {
+                  name: "Lahan Sawit",
+                  percentage: "38,81%",
+                  color: "bg-green-500",
+                },
+                {
+                  name: "Lahan Hutan",
+                  percentage: "48,59%",
+                  color: "bg-emerald-600",
+                },
+                { name: "Tambak", percentage: "3,75%", color: "bg-blue-500" },
+                { name: "Jeruk", percentage: "1,39%", color: "bg-orange-500" },
+                { name: "Sungai", percentage: "1,33%", color: "bg-cyan-500" },
+                { name: "Jagung", percentage: "0,69%", color: "bg-yellow-500" },
+                { name: "Pisang", percentage: "0,14%", color: "bg-lime-500" },
+                { name: "Durian", percentage: "0,03%", color: "bg-amber-600" },
+                { name: "Kelapa", percentage: "0,02%", color: "bg-teal-500" },
+                { name: "Coklat", percentage: "0,02%", color: "bg-amber-700" },
+              ].map((item, index) => (
+                <div
+                  key={item.name}
+                  className="bg-white p-4 rounded-lg shadow-md text-center"
+                  data-aos="zoom-in"
+                  data-aos-delay={300 + index * 50}
+                >
+                  <div
+                    className={`w-12 h-12 ${item.color} rounded-full mx-auto mb-2 flex items-center justify-center`}
+                  >
+                    <span className="text-white font-bold text-sm">
+                      {item.percentage}
+                    </span>
+                  </div>
+                  <h4 className="font-semibold text-gray-800 text-sm">
+                    {item.name}
+                  </h4>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Detailed Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Sumber Daya Alam Detail */}
+            <div
+              className="bg-white p-8 rounded-xl shadow-lg"
+              data-aos="fade-right"
+              data-aos-delay="400"
+            >
+              <h4 className="text-2xl font-bold text-green-700 mb-6 flex items-center">
+                <TreePine className="w-8 h-8 mr-3" />
+                Sumber Daya Alam
+              </h4>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Perkebunan kelapa sawit yang dominan (38,81%) sebagai
+                  komoditas utama
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Potensi peternakan dengan pakan ternak melimpah dan kotoran
+                  untuk biogas
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Sektor perikanan tangkap dan budidaya di sungai dan perairan
+                  sekitar
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Hutan seluas 48,59% sebagai paru-paru desa dan konservasi alam
+                </li>
+              </ul>
+            </div>
+
+            {/* Sumber Daya Manusia Detail */}
+            <div
+              className="bg-white p-8 rounded-xl shadow-lg"
+              data-aos="fade-left"
+              data-aos-delay="500"
+            >
+              <h4 className="text-2xl font-bold text-blue-700 mb-6 flex items-center">
+                <Users className="w-8 h-8 mr-3" />
+                Sumber Daya Manusia
+              </h4>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Penduduk usia produktif yang besar dengan SDM yang baik
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Budaya musyawarah dan gotong royong yang masih terpelihara
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Kemampuan bertani yang diwariskan turun-temurun
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Fasilitas pendidikan dari TK sampai SMP dengan kualitas
+                  terbaik
+                </li>
+              </ul>
+            </div>
+
+            {/* Kelembagaan Detail */}
+            <div
+              className="bg-white p-8 rounded-xl shadow-lg"
+              data-aos="fade-right"
+              data-aos-delay="600"
+            >
+              <h4 className="text-2xl font-bold text-purple-700 mb-6 flex items-center">
+                <Building className="w-8 h-8 mr-3" />
+                Kelembagaan/Organisasi
+              </h4>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-purple-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Hubungan harmonis antara kepala desa, perangkat desa, dan
+                  masyarakat
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-purple-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Lembaga desa yang aktif: Pemerintah Desa, LKMD, dan BPD
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-purple-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Kelompok masyarakat: Karang Taruna, Kelompok Tani, Gapoktan
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-purple-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Kelompok keagamaan yang aktif dalam pembangunan desa
+                </li>
+              </ul>
+            </div>
+
+            {/* Sosial Budaya Detail */}
+            <div
+              className="bg-white p-8 rounded-xl shadow-lg"
+              data-aos="fade-left"
+              data-aos-delay="700"
+            >
+              <h4 className="text-2xl font-bold text-orange-700 mb-6 flex items-center">
+                <Award className="w-8 h-8 mr-3" />
+                Sumber Daya Sosial Budaya
+              </h4>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Pola kepemimpinan demokratis dengan partisipasi masyarakat
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Dinamika politik lokal yang sehat dan kondusif
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Toleransi tinggi antar suku dan ras dalam keberagaman
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Tidak pernah terjadi kerawanan sosial sejak berdirinya desa
+                </li>
+              </ul>
             </div>
           </div>
         </div>
