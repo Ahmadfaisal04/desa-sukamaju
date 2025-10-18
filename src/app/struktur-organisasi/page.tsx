@@ -55,10 +55,10 @@ export default function StrukturOrganisasi() {
     (member) => member.jabatan === "Sekretaris Desa"
   );
   const kepalaSeksi = aparatData.filter(
-    (member) => member.jabatan.includes("Kasi")
+    (member) => member.jabatan.includes("Kasi") && !member.jabatan.includes("Staf")
   );
   const kepalaUrusan = aparatData.filter(
-    (member) => member.jabatan.includes("Kaur")
+    (member) => member.jabatan.includes("Kaur") && !member.jabatan.includes("Staf")
   );
   const stafDesa = aparatData.filter(
     (member) => member.jabatan.includes("Staf")
@@ -632,7 +632,8 @@ export default function StrukturOrganisasi() {
                       <div className="w-full max-w-xs space-y-3">
                         <h4 className="text-center font-bold text-gray-700 text-sm">KEPALA SEKSI</h4>
                         {["Kasi Pemerintahan", "Kasi Kesejahteraan", "Kasi Pelayanan"].map((jabatan) => {
-                          const member = kepalaSeksi.find(m => m.jabatan === jabatan);
+                          const member = kepalaSeksi.find(m => m.jabatan === jabatan && !m.jabatan.toLowerCase().includes('staf'));
+                          if (!member) return null;
                           return (
                             <div key={jabatan} className="bg-yellow-100 border-2 border-yellow-600 rounded-lg p-3 text-center">
                               <h4 className="font-bold text-yellow-800 text-xs">{jabatan.toUpperCase()}</h4>
@@ -648,7 +649,8 @@ export default function StrukturOrganisasi() {
                       <div className="w-full max-w-xs space-y-3">
                         <h4 className="text-center font-bold text-gray-700 text-sm">KEPALA URUSAN</h4>
                         {["Kaur Keuangan", "Kaur Perencanaan", "Kaur TU & Umum"].map((jabatan) => {
-                          const member = kepalaUrusan.find(m => m.jabatan === jabatan);
+                          const member = kepalaUrusan.find(m => m.jabatan === jabatan && !m.jabatan.toLowerCase().includes('staf'));
+                          if (!member) return null;
                           return (
                             <div key={jabatan} className="bg-yellow-100 border-2 border-yellow-600 rounded-lg p-3 text-center">
                               <h4 className="font-bold text-yellow-800 text-xs">{jabatan.toUpperCase()}</h4>
