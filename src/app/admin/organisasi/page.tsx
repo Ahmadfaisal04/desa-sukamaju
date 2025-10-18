@@ -224,10 +224,7 @@ export default function AdminOrganisasiPage() {
       formData.append('periode_mulai', addFormData.periode_mulai);
       formData.append('periode_selesai', addFormData.periode_selesai);
       
-      // Tambahkan nama_dusun jika jabatan adalah Kepala Dusun
-      if (addFormData.jabatan === 'Kepala Dusun' && addFormData.nama_dusun) {
-        formData.append('nama_dusun', addFormData.nama_dusun);
-      }
+
       
       if (addFormData.foto) {
         formData.append('foto', addFormData.foto);
@@ -289,10 +286,7 @@ export default function AdminOrganisasiPage() {
       formData.append('periode_mulai', editFormData.periode_mulai);
       formData.append('periode_selesai', editFormData.periode_selesai);
       
-      // Tambahkan nama_dusun jika jabatan adalah Kepala Dusun
-      if (editFormData.jabatan === 'Kepala Dusun' && editFormData.nama_dusun) {
-        formData.append('nama_dusun', editFormData.nama_dusun);
-      }
+
       
       // Handle foto - jika ada file baru gunakan file baru, jika tidak gunakan foto lama
       if (editFormData.foto) {
@@ -359,7 +353,7 @@ export default function AdminOrganisasiPage() {
       status: member.status,
       periode_mulai: member.periode_mulai,
       periode_selesai: member.periode_selesai,
-      nama_dusun: member.jabatan.includes('Kepala Dusun') ? member.jabatan.replace('Kepala Dusun ', '') : "",
+      nama_dusun: "",
       foto: null,
     });
     setShowEditModal(true);
@@ -384,20 +378,38 @@ export default function AdminOrganisasiPage() {
   const positions = [
     "Semua",
     "Kepala Desa",
-    "Wakil Kepala Desa",
-    "Sekretaris",
-    "Bendahara",
-    "Kepala Urusan",
-    "Kepala Dusun",
-    "Staf",
+    "Sekretaris Desa",
+    "Kasi Pemerintahan",
+    "Kasi Kesejahteraan",
+    "Kasi Pelayanan", 
+    "Kaur Keuangan",
+    "Kaur Perencanaan",
+    "Kaur TU & Umum",
+    "Staf Kasi Pemerintahan",
+    "Staf Kasi Kesejahteraan",
+    "Staf Kasi Pelayanan",
+    "Staf Keuangan",
+    "Staf Perencanaan", 
+    "Staf TU & Umum",
+    "Kadus Suka Maju",
+    "Kadus Beringin",
+    "Kadus Bulu' Parangga",
+    "Kadus Lara",
+    "Kadus Kampung Baru",
   ];
 
   const filteredMembers = aparatData.filter((member) => {
     const matchesSearch =
       member.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPosition =
-      filterPosition === "Semua" || member.jabatan === filterPosition;
+    
+    let matchesPosition = false;
+    if (filterPosition === "Semua") {
+      matchesPosition = true;
+    } else {
+      matchesPosition = member.jabatan === filterPosition;
+    }
+    
     return matchesSearch && matchesPosition;
   });
 
@@ -473,10 +485,20 @@ export default function AdminOrganisasiPage() {
           </div>
         </div>
 
-        {positions.slice(1, 4).map((position, index) => {
-          const count = aparatData.filter(
-            (member) => member.jabatan === position
-          ).length;
+        {/* Show key positions stats */}
+        {["Kepala Desa", "Sekretaris Desa", "Kepala Dusun"].map((position, index) => {
+          let count;
+          if (position === "Kepala Dusun") {
+            // Count all Kadus positions
+            count = aparatData.filter(member => 
+              member.jabatan.includes("Kadus")
+            ).length;
+          } else {
+            count = aparatData.filter(member => 
+              member.jabatan === position
+            ).length;
+          }
+          
           const colors = [
             { bg: "bg-blue-100", text: "text-blue-600" },
             { bg: "bg-purple-100", text: "text-purple-600" },
@@ -788,45 +810,55 @@ export default function AdminOrganisasiPage() {
                       setAddFormData(prev => ({ 
                         ...prev, 
                         jabatan: e.target.value,
-                        nama_dusun: e.target.value !== 'Kepala Dusun' ? '' : prev.nama_dusun
+                        nama_dusun: !e.target.value.includes('Kadus') ? '' : prev.nama_dusun
                       }))
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
                     <option value="">Pilih Jabatan</option>
-                    <option value="Kepala Desa">Kepala Desa</option>
-                    <option value="Wakil Kepala Desa">Wakil Kepala Desa</option>
-                    <option value="Sekretaris">Sekretaris</option>
-                    <option value="Bendahara">Bendahara</option>
-                    <option value="Kepala Urusan">Kepala Urusan</option>
-                    <option value="Kepala Dusun">Kepala Dusun</option>
-                    <option value="Staf">Staf</option>
+                    
+                    {/* Pimpinan */}
+                    <optgroup label="Pimpinan">
+                      <option value="Kepala Desa">Kepala Desa</option>
+                      <option value="Sekretaris Desa">Sekretaris Desa</option>
+                    </optgroup>
+                    
+                    {/* Kepala Seksi */}
+                    <optgroup label="Kepala Seksi">
+                      <option value="Kasi Pemerintahan">Kasi Pemerintahan</option>
+                      <option value="Kasi Kesejahteraan">Kasi Kesejahteraan</option>
+                      <option value="Kasi Pelayanan">Kasi Pelayanan</option>
+                    </optgroup>
+                    
+                    {/* Kepala Urusan */}
+                    <optgroup label="Kepala Urusan">
+                      <option value="Kaur Keuangan">Kaur Keuangan</option>
+                      <option value="Kaur Perencanaan">Kaur Perencanaan</option>
+                      <option value="Kaur TU & Umum">Kaur TU & Umum</option>
+                    </optgroup>
+                    
+                    {/* Staf */}
+                    <optgroup label="Staf">
+                      <option value="Staf Kasi Pemerintahan">Staf Kasi Pemerintahan</option>
+                      <option value="Staf Kasi Kesejahteraan">Staf Kasi Kesejahteraan</option>
+                      <option value="Staf Kasi Pelayanan">Staf Kasi Pelayanan</option>
+                      <option value="Staf Keuangan">Staf Keuangan</option>
+                      <option value="Staf Perencanaan">Staf Perencanaan</option>
+                      <option value="Staf TU & Umum">Staf TU & Umum</option>
+                    </optgroup>
+                    
+                    {/* Kepala Dusun */}
+                    <optgroup label="Kepala Dusun">
+                      <option value="Kadus Suka Maju">Kadus Suka Maju</option>
+                      <option value="Kadus Beringin">Kadus Beringin</option>
+                      <option value="Kadus Bulp Parangga">Kadus Bulp Parangga</option>
+                      <option value="Kadus Laka">Kadus Laka</option>
+                      <option value="Kadus Kampong Baru">Kadus Kampong Baru</option>
+                    </optgroup>
                   </select>
                 </div>
 
-                {/* Nama Dusun - Conditional */}
-                {addFormData.jabatan === 'Kepala Dusun' && (
-                  <div>
-                    <label htmlFor="nama_dusun" className="block text-sm font-medium text-gray-700 mb-2">
-                      Nama Dusun *
-                    </label>
-                    <select
-                      id="nama_dusun"
-                      required
-                      value={addFormData.nama_dusun}
-                      onChange={(e) => setAddFormData(prev => ({ ...prev, nama_dusun: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    >
-                      <option value="">Pilih Dusun</option>
-                      <option value="Dusun Makmur">Dusun Makmur</option>
-                      <option value="Dusun Sejahtera">Dusun Sejahtera</option>
-                      <option value="Dusun Bahagia">Dusun Bahagia</option>
-                      <option value="Dusun Maju">Dusun Maju</option>
-                      <option value="Dusun Sentosa">Dusun Sentosa</option>
-                      <option value="Dusun Harmoni">Dusun Harmoni</option>
-                    </select>
-                  </div>
-                )}
+
 
                 {/* No Telepon */}
                 <div>
@@ -1032,45 +1064,55 @@ export default function AdminOrganisasiPage() {
                       setEditFormData(prev => ({ 
                         ...prev, 
                         jabatan: e.target.value,
-                        nama_dusun: e.target.value !== 'Kepala Dusun' ? '' : prev.nama_dusun
+                        nama_dusun: !e.target.value.includes('Kadus') ? '' : prev.nama_dusun
                       }))
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   >
                     <option value="">Pilih Jabatan</option>
-                    <option value="Kepala Desa">Kepala Desa</option>
-                    <option value="Wakil Kepala Desa">Wakil Kepala Desa</option>
-                    <option value="Sekretaris">Sekretaris</option>
-                    <option value="Bendahara">Bendahara</option>
-                    <option value="Kepala Urusan">Kepala Urusan</option>
-                    <option value="Kepala Dusun">Kepala Dusun</option>
-                    <option value="Staf">Staf</option>
+                    
+                    {/* Pimpinan */}
+                    <optgroup label="Pimpinan">
+                      <option value="Kepala Desa">Kepala Desa</option>
+                      <option value="Sekretaris Desa">Sekretaris Desa</option>
+                    </optgroup>
+                    
+                    {/* Kepala Seksi */}
+                    <optgroup label="Kepala Seksi">
+                      <option value="Kasi Pemerintahan">Kasi Pemerintahan</option>
+                      <option value="Kasi Kesejahteraan">Kasi Kesejahteraan</option>
+                      <option value="Kasi Pelayanan">Kasi Pelayanan</option>
+                    </optgroup>
+                    
+                    {/* Kepala Urusan */}
+                    <optgroup label="Kepala Urusan">
+                      <option value="Kaur Keuangan">Kaur Keuangan</option>
+                      <option value="Kaur Perencanaan">Kaur Perencanaan</option>
+                      <option value="Kaur TU & Umum">Kaur TU & Umum</option>
+                    </optgroup>
+                    
+                    {/* Staf */}
+                    <optgroup label="Staf">
+                      <option value="Staf Kasi Pemerintahan">Staf Kasi Pemerintahan</option>
+                      <option value="Staf Kasi Kesejahteraan">Staf Kasi Kesejahteraan</option>
+                      <option value="Staf Kasi Pelayanan">Staf Kasi Pelayanan</option>
+                      <option value="Staf Keuangan">Staf Keuangan</option>
+                      <option value="Staf Perencanaan">Staf Perencanaan</option>
+                      <option value="Staf TU & Umum">Staf TU & Umum</option>
+                    </optgroup>
+                    
+                    {/* Kepala Dusun */}
+                    <optgroup label="Kepala Dusun">
+                      <option value="Kadus Suka Maju">Kadus Suka Maju</option>
+                      <option value="Kadus Beringin">Kadus Beringin</option>
+                      <option value="Kadus Bulp Parangga">Kadus Bulp Parangga</option>
+                      <option value="Kadus Laka">Kadus Laka</option>
+                      <option value="Kadus Kampong Baru">Kadus Kampong Baru</option>
+                    </optgroup>
                   </select>
                 </div>
 
-                {/* Nama Dusun - Conditional */}
-                {editFormData.jabatan === 'Kepala Dusun' && (
-                  <div>
-                    <label htmlFor="edit_nama_dusun" className="block text-sm font-medium text-gray-700 mb-2">
-                      Nama Dusun *
-                    </label>
-                    <select
-                      id="edit_nama_dusun"
-                      required
-                      value={editFormData.nama_dusun}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, nama_dusun: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    >
-                      <option value="">Pilih Dusun</option>
-                      <option value="Dusun Makmur">Dusun Makmur</option>
-                      <option value="Dusun Sejahtera">Dusun Sejahtera</option>
-                      <option value="Dusun Bahagia">Dusun Bahagia</option>
-                      <option value="Dusun Maju">Dusun Maju</option>
-                      <option value="Dusun Sentosa">Dusun Sentosa</option>
-                      <option value="Dusun Harmoni">Dusun Harmoni</option>
-                    </select>
-                  </div>
-                )}
+
 
                 {/* No Telepon */}
                 <div>
