@@ -12,18 +12,169 @@ import {
   Edit3,
   Trash2,
 } from "lucide-react";
-import { newsData } from "@/data/news";
-import { galleryData } from "@/data/gallery";
-import { organizationData } from "@/data/organization";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+
+// Interface untuk data berita dari API
+interface BeritaData {
+  id_berita: string;
+  judul_berita: string;
+  kategori: string;
+  tanggal_pelaksanaan: string;
+  deskripsi: string;
+  gambar_berita: string[];
+  created_at: string;
+}
+
+// Interface untuk data aparat dari API
+interface AparatData {
+  id_aparat: string;
+  nama: string;
+  jabatan: string;
+  no_telepon: string;
+  email: string;
+  status: string;
+  periode_mulai: string;
+  periode_selesai: string;
+  foto: string;
+}
 
 export default function AdminDashboard() {
-  const recentNews = newsData.slice(0, 3);
-  const recentGallery = galleryData.slice(0, 4);
+  const [recentNews, setRecentNews] = useState<BeritaData[]>([]);
+  const [recentGallery, setRecentGallery] = useState<any[]>([]);
+  const [aparatData, setAparatData] = useState<AparatData[]>([]);
+  const [totalBerita, setTotalBerita] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch data dari API
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch data berita
+        const beritaResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita`);
+        if (!beritaResponse.ok) throw new Error('Gagal mengambil data berita');
+        
+        const beritaResult = await beritaResponse.json();
+        
+        if (beritaResult.code === 200) {
+          const beritaData = beritaResult.data || [];
+          setTotalBerita(beritaData.length);
+          
+          // Ambil 3 berita terbaru (urutkan berdasarkan created_at terbaru)
+          const sortedNews = beritaData
+            .sort((a: BeritaData, b: BeritaData) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .slice(0, 3);
+          
+          setRecentNews(sortedNews);
+
+          // Ambil gambar untuk galeri dari semua berita
+          const galleryItems: any[] = [];
+          beritaData.forEach((berita: BeritaData) => {
+            if (berita.gambar_berita && berita.gambar_berita.length > 0) {
+              berita.gambar_berita.forEach((gambar, index) => {
+                galleryItems.push({
+                  id: `${berita.id_berita}_${index}`,
+                  src: gambar,
+                  title: berita.judul_berita,
+                  category: berita.kategori,
+                  date: berita.tanggal_pelaksanaan,
+                  berita_id: berita.id_berita
+                });
+              });
+            }
+          });
+
+          // Ambil 4 gambar terbaru untuk galeri
+          const sortedGallery = galleryItems
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 4);
+          
+          setRecentGallery(sortedGallery);
+        }
+
+        // Fetch data aparat
+        const aparatResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/aparat`);
+        if (!aparatResponse.ok) throw new Error('Gagal mengambil data aparat');
+        
+        const aparatResult = await aparatResponse.json();
+        
+        if (aparatResult.code === 200) {
+          setAparatData(aparatResult.data || []);
+        }
+
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setError('Terjadi kesalahan saat mengambil data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Hitung total gambar dari semua berita
+  const totalGambar = recentNews.reduce((total, berita) => {
+    return total + (berita.gambar_berita ? berita.gambar_berita.length : 0);
+  }, 0);
+
+  // Fungsi untuk mendapatkan URL gambar
+  const getImageUrl = (filename: string) => {
+    return `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${filename}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-8 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Selamat Datang, Administrator!</h1>
+              <p className="text-emerald-100 text-lg">
+                Kelola konten website Desa Sukamaju dengan mudah dan efisien.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-8 text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Selamat Datang, Administrator!</h1>
+              <p className="text-emerald-100 text-lg">
+                Kelola konten website Desa Sukamaju dengan mudah dan efisien.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-600 text-2xl">!</span>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal memuat data</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {" "}
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-8 text-white shadow-lg">
         <div className="flex items-center justify-between">
@@ -41,7 +192,8 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>{" "}
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
@@ -51,7 +203,7 @@ export default function AdminDashboard() {
                 Total Berita
               </p>
               <p className="text-3xl font-bold text-gray-900">
-                {newsData.length}
+                {totalBerita}
               </p>
             </div>
             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -60,7 +212,7 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-4 flex items-center text-sm">
             <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-            <span className="text-green-600 font-medium">+2 minggu ini</span>
+            <span className="text-green-600 font-medium">+{recentNews.length} minggu ini</span>
           </div>
         </div>
 
@@ -71,7 +223,7 @@ export default function AdminDashboard() {
                 Total Galeri
               </p>
               <p className="text-3xl font-bold text-gray-900">
-                {galleryData.length}
+                {totalGambar}
               </p>
             </div>
             <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -80,7 +232,7 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-4 flex items-center text-sm">
             <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-            <span className="text-green-600 font-medium">+5 minggu ini</span>
+            <span className="text-green-600 font-medium">+{recentGallery.length} minggu ini</span>
           </div>
         </div>
 
@@ -91,7 +243,7 @@ export default function AdminDashboard() {
                 Struktur Organisasi
               </p>
               <p className="text-3xl font-bold text-gray-900">
-                {organizationData.length}
+                {aparatData.length}
               </p>
             </div>
             <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center">
@@ -121,7 +273,8 @@ export default function AdminDashboard() {
             <span className="text-green-600 font-medium">+15% bulan ini</span>
           </div>
         </div>
-      </div>{" "}
+      </div>
+
       {/* Quick Actions */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Aksi Cepat</h2>
@@ -165,16 +318,17 @@ export default function AdminDashboard() {
                 <Users className="w-6 h-6 text-white" />
               </div>
               <Plus className="w-5 h-5 text-emerald-600" />
-            </div>{" "}
+            </div>
             <div>
               <h3 className="font-bold text-gray-900 mb-1">
                 Kelola Organisasi
               </h3>
               <p className="text-sm text-gray-600">Atur struktur organisasi</p>
             </div>
-          </Link>{" "}
+          </Link>
         </div>
       </div>
+
       {/* Recent Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent News */}
@@ -195,35 +349,57 @@ export default function AdminDashboard() {
           <div className="p-6">
             <div className="space-y-4">
               {recentNews.map((news) => (
-                <div key={news.id} className="flex items-start space-x-3 group">
-                  <div className="w-16 h-12 bg-gradient-to-br from-blue-200 to-purple-200 rounded-lg flex-shrink-0 flex items-center justify-center">
-                    <span className="text-blue-700 text-xs font-semibold">
-                      IMG
-                    </span>
+                <div key={news.id_berita} className="flex items-start space-x-3 group">
+                  <div className="w-16 h-12 bg-gradient-to-br from-blue-200 to-purple-200 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {news.gambar_berita && news.gambar_berita.length > 0 ? (
+                      <img
+                        src={getImageUrl(news.gambar_berita[0])}
+                        alt={news.judul_berita}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`absolute inset-0 bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center ${news.gambar_berita && news.gambar_berita.length > 0 ? 'hidden' : ''}`}>
+                      <span className="text-blue-700 text-xs font-semibold">
+                        IMG
+                      </span>
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                      {news.title}
+                      {news.judul_berita}
                     </h3>
                     <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
                       <Calendar className="w-3 h-3" />
                       <span>
-                        {new Date(news.date).toLocaleDateString("id-ID")}
+                        {new Date(news.tanggal_pelaksanaan).toLocaleDateString("id-ID")}
                       </span>
                       <span>•</span>
-                      <span>{news.category}</span>
+                      <span>{news.kategori}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <button className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200">
+                    <Link
+                      href={`/admin/berita/edit/${news.id_berita}`}
+                      className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                    >
                       <Edit3 className="w-4 h-4" />
-                    </button>
+                    </Link>
                     <button className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               ))}
+              {recentNews.length === 0 && (
+                <div className="text-center py-4 text-gray-500">
+                  Belum ada berita
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -248,16 +424,29 @@ export default function AdminDashboard() {
               {recentGallery.map((item) => (
                 <div key={item.id} className="group relative">
                   <div className="aspect-square bg-gradient-to-br from-emerald-200 to-teal-200 rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-emerald-600/20 flex items-center justify-center">
+                    <img
+                      src={getImageUrl(item.src)}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center hidden">
                       <span className="text-emerald-700 font-semibold text-sm">
                         Foto
                       </span>
                     </div>
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
-                        <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
+                        <Link
+                          href={`/admin/berita/edit/${item.berita_id}`}
+                          className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"
+                        >
                           <Edit3 className="w-4 h-4" />
-                        </button>
+                        </Link>
                         <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -272,59 +461,11 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Activity Log */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Aktivitas Terbaru</h2>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Newspaper className="w-4 h-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900">
-                  Berita baru ditambahkan: "Pembangunan Jalan Desa Tahap II
-                  Dimulai"
-                </p>
-                <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  <span>2 jam yang lalu</span>
+              {recentGallery.length === 0 && (
+                <div className="col-span-2 text-center py-8 text-gray-500">
+                  Belum ada foto di galeri
                 </div>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Camera className="w-4 h-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900">
-                  5 foto baru ditambahkan ke galeri "Kegiatan"
-                </p>
-                <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  <span>1 hari yang lalu</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Users className="w-4 h-4 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900">Data organisasi diperbarui</p>
-                <div className="flex items-center space-x-2 mt-1 text-sm text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  <span>3 hari yang lalu</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
