@@ -1,21 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Plus, Search, Filter, Edit3, Trash2, Eye, 
-  Calendar, User, Tag, MoreVertical, Camera, Upload 
+  Calendar, User, Tag, MoreVertical, Camera, Upload, X 
 } from "lucide-react";
 import { galleryData } from "@/data/gallery";
+
+interface BeritaData {
+  id_berita: string;
+  judul_berita: string;
+  kategori: string;
+  tanggal_pelaksanaan: string;
+  deskripsi: string;
+  gambar_berita: string[];
+  created_at: string;
+}
+
+interface GalleryItem {
+  id: string;
+  src: string;
+  title: string;
+  category: string;
+  date: string;
+  description: string;
+  berita_id: string;
+}
 
 export default function AdminGaleriPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("Semua");
   const [selectedGallery, setSelectedGallery] = useState<string[]>([]);
+  const [beritaData, setBeritaData] = useState<BeritaData[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedBeritaId, setSelectedBeritaId] = useState("");
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [searchBerita, setSearchBerita] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  const categories = ["Semua", "Kegiatan", "Pembangunan", "Budaya", "Olahraga", "Lainnya"];
+  // Fetch data from API
+  useEffect(() => {
+    fetchBeritaData();
+  }, []);
+
+  // Prevent default drag behavior on window
+  useEffect(() => {
+    const preventDefault = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('dragover', preventDefault);
+    window.addEventListener('drop', preventDefault);
+
+    return () => {
+      window.removeEventListener('dragover', preventDefault);
+      window.removeEventListener('drop', preventDefault);
+    };
+  }, []);
+
+  const fetchBeritaData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita`);
+      const result = await response.json();
+
+      if (result.code === 200) {
+        setBeritaData(result.data || []);
+        
+        // Transform berita data to gallery items
+        const gallery: GalleryItem[] = [];
+        result.data.forEach((berita: BeritaData) => {
+          berita.gambar_berita.forEach((gambar, index) => {
+            gallery.push({
+              id: `${berita.id_berita}_${index}`,
+              src: gambar,
+              title: berita.judul_berita,
+              category: berita.kategori,
+              date: berita.tanggal_pelaksanaan,
+              description: berita.deskripsi,
+              berita_id: berita.id_berita
+            });
+          });
+        });
+        
+        setGalleryItems(gallery);
+        setError(null);
+      } else {
+        setError(result.message || "Gagal mengambil data galeri");
+      }
+    } catch (error) {
+      console.error("Error fetching berita data:", error);
+      setError("Terjadi kesalahan saat mengambil data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get unique categories from berita data
+  const getCategories = () => {
+    const categories = new Set(beritaData.map(berita => berita.kategori));
+    return ["Semua", ...Array.from(categories)];
+  };
+
+  const categories = getCategories();
   
-  const filteredGallery = galleryData.filter(item => {
+  const filteredGallery = galleryItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === "Semua" || item.category === filterCategory;
@@ -38,6 +133,120 @@ export default function AdminGaleriPage() {
     );
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setSelectedImages(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length > 0) {
+      setSelectedImages(prev => [...prev, ...imageFiles]);
+    }
+    
+    if (files.length > imageFiles.length) {
+      alert('Beberapa file diabaikan karena bukan file gambar');
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const resetUploadForm = () => {
+    setSelectedBeritaId("");
+    setSelectedImages([]);
+    setSearchBerita("");
+    setShowDropdown(false);
+    setShowUploadModal(false);
+    setIsDragOver(false);
+  };
+
+  // Filter berita berdasarkan pencarian
+  const filteredBeritaOptions = beritaData.filter(berita =>
+    berita.judul_berita.toLowerCase().includes(searchBerita.toLowerCase()) ||
+    berita.id_berita.toLowerCase().includes(searchBerita.toLowerCase())
+  );
+
+  // Get selected berita info
+  const selectedBerita = beritaData.find(berita => berita.id_berita === selectedBeritaId);
+
+  const handleBeritaSelect = (beritaId: string, beritaTitle: string) => {
+    setSelectedBeritaId(beritaId);
+    setSearchBerita(beritaId === "lainnya" ? "Lainnya - Upload gambar umum" : `${beritaId.slice(0, 5)} - ${beritaTitle}`);
+    setShowDropdown(false);
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBeritaId || selectedImages.length === 0) {
+      alert("Pilih berita dan minimal satu foto");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      
+      // Jika pilih "Lainnya", tidak perlu id_berita
+      if (selectedBeritaId !== "lainnya") {
+        formData.append('id_berita', selectedBeritaId);
+      }
+      
+      selectedImages.forEach((image) => {
+        formData.append('gambar', image);
+      });
+
+      // Tentukan endpoint berdasarkan pilihan
+      const endpoint = selectedBeritaId === "lainnya" 
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/galeri/photo`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita/photo`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert(selectedBeritaId === "lainnya" 
+          ? 'Berhasil menambahkan foto ke galeri!' 
+          : 'Berhasil menambahkan foto berita!'
+        );
+        resetUploadForm();
+        fetchBeritaData(); // Refresh data
+      } else {
+        alert(`Gagal upload foto: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      alert('Terjadi kesalahan saat upload foto');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -46,13 +255,13 @@ export default function AdminGaleriPage() {
           <h1 className="text-3xl font-bold text-gray-900">Kelola Galeri</h1>
           <p className="text-gray-600 mt-1">Kelola semua foto dan gambar website Desa Sukamaju</p>
         </div>
-        <Link
-          href="/admin/galeri/tambah"
+        <button
+          onClick={() => setShowUploadModal(true)}
           className="inline-flex items-center justify-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 shadow-sm"
         >
           <Upload className="w-5 h-5" />
           <span>Upload Foto</span>
-        </Link>
+        </button>
       </div>
 
       {/* Stats */}
@@ -61,7 +270,9 @@ export default function AdminGaleriPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Total Foto</p>
-              <p className="text-3xl font-bold text-gray-900">{galleryData.length}</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {loading ? '-' : galleryItems.length}
+              </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <Camera className="w-6 h-6 text-purple-600" />
@@ -70,7 +281,7 @@ export default function AdminGaleriPage() {
         </div>
 
         {categories.slice(1, 4).map((category, index) => {
-          const count = galleryData.filter(item => item.category === category).length;
+          const count = galleryItems.filter(item => item.category === category).length;
           const colors = [
             { bg: 'bg-blue-100', text: 'text-blue-600' },
             { bg: 'bg-emerald-100', text: 'text-emerald-600' },
@@ -83,7 +294,9 @@ export default function AdminGaleriPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">{category}</p>
-                  <p className="text-3xl font-bold text-gray-900">{count}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {loading ? '-' : count}
+                  </p>
                 </div>
                 <div className={`w-12 h-12 ${color.bg} rounded-xl flex items-center justify-center`}>
                   <Tag className={`w-6 h-6 ${color.text}`} />
@@ -153,34 +366,62 @@ export default function AdminGaleriPage() {
             </div>
           </div>
 
-          {filteredGallery.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <span className="text-gray-500">Memuat galeri...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <X className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal memuat galeri</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={fetchBeritaData}
+                className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          ) : filteredGallery.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredGallery.map((item) => (
                 <div key={item.id} className="group relative">
-                  <div className="aspect-square bg-gradient-to-br from-purple-200 to-pink-200 rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-purple-600/20 flex items-center justify-center">
-                      <span className="text-purple-700 font-semibold text-sm">Foto</span>
-                    </div>
+                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${item.src}`}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y5ZmFmYiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPkdhbWJhcjwvdGV4dD4KPC9zdmc+';
+                      }}
+                    />
                     
                     {/* Checkbox overlay */}
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute top-2 left-2 z-10">
                       <input
                         type="checkbox"
                         checked={selectedGallery.includes(item.id)}
                         onChange={() => handleSelectGallery(item.id)}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white/80 backdrop-blur-sm"
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white/80 backdrop-blur-sm cursor-pointer"
                       />
                     </div>
 
                     {/* Action buttons overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center pointer-events-none">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2 pointer-events-auto">
                         <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
+                        <Link 
+                          href={`/berita/${item.berita_id}`}
+                          className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"
+                        >
                           <Edit3 className="w-4 h-4" />
-                        </button>
+                        </Link>
                         <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -205,25 +446,32 @@ export default function AdminGaleriPage() {
           ) : (
             <div className="text-center py-12">
               <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada foto ditemukan</h3>
-              <p className="text-gray-500 mb-4">Coba ubah filter atau kata kunci pencarian</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {galleryItems.length === 0 ? "Belum ada foto" : "Tidak ada foto ditemukan"}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {galleryItems.length === 0 
+                  ? "Foto akan muncul otomatis dari berita yang memiliki gambar"
+                  : "Coba ubah filter atau kata kunci pencarian"
+                }
+              </p>
               <Link
-                href="/admin/galeri/tambah"
+                href="/admin/berita"
                 className="inline-flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
               >
-                <Upload className="w-4 h-4" />
-                <span>Upload Foto Pertama</span>
+                <Plus className="w-4 h-4" />
+                <span>Kelola Berita</span>
               </Link>
             </div>
           )}
         </div>
 
         {/* Pagination */}
-        {filteredGallery.length > 0 && (
+        {!loading && !error && filteredGallery.length > 0 && (
           <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500">
-                Menampilkan {filteredGallery.length} dari {galleryData.length} foto
+                Menampilkan {filteredGallery.length} dari {galleryItems.length} foto
               </div>
               <div className="flex items-center space-x-2">
                 <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
@@ -240,6 +488,210 @@ export default function AdminGaleriPage() {
           </div>
         )}
       </div>
+
+      {/* Upload Photo Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Upload Foto Berita</h3>
+              <button
+                onClick={resetUploadForm}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Click outside to close dropdown */}
+            {showDropdown && (
+              <div 
+                className="fixed inset-0 z-5" 
+                onClick={() => setShowDropdown(false)}
+              ></div>
+            )}
+
+            <form onSubmit={handleUploadSubmit} className="p-6 space-y-6">
+              {/* Pilih Berita */}
+              <div>
+                <label htmlFor="berita_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Berita *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchBerita}
+                    onChange={(e) => {
+                      setSearchBerita(e.target.value);
+                      setShowDropdown(true);
+                      if (!e.target.value) {
+                        setSelectedBeritaId("");
+                      }
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    placeholder="Cari berita atau pilih 'Lainnya'..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    autoComplete="off"
+                  />
+                  
+                  {showDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {/* Option Lainnya */}
+                      <div
+                        onClick={() => handleBeritaSelect("lainnya", "Upload gambar umum")}
+                        className="px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100"
+                      >
+                        <div className="font-medium text-purple-600">Lainnya - Upload gambar umum</div>
+                        <div className="text-xs text-gray-500">Upload foto tanpa dikaitkan dengan berita tertentu</div>
+                      </div>
+                      
+                      {/* Berita Options */}
+                      {filteredBeritaOptions.length > 0 ? (
+                        filteredBeritaOptions.map((berita) => (
+                          <div
+                            key={berita.id_berita}
+                            onClick={() => handleBeritaSelect(berita.id_berita, berita.judul_berita)}
+                            className="px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                          >
+                            <div className="font-medium">{berita.id_berita.slice(0, 5)} - {berita.judul_berita}</div>
+                            <div className="text-xs text-gray-500">Kategori: {berita.kategori}</div>
+                          </div>
+                        ))
+                      ) : searchBerita && searchBerita !== "Lainnya - Upload gambar umum" ? (
+                        <div className="px-3 py-2 text-gray-500 text-sm">
+                          Tidak ada berita yang cocok dengan "{searchBerita}"
+                        </div>
+                      ) : null}
+                      
+                      {!searchBerita && (
+                        <div className="px-3 py-2 text-gray-500 text-sm">
+                          Ketik untuk mencari berita atau pilih "Lainnya"
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {selectedBeritaId && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded border text-sm">
+                    {selectedBeritaId === "lainnya" ? (
+                      <span className="text-purple-600">✓ Upload gambar umum (tidak dikaitkan dengan berita)</span>
+                    ) : (
+                      <span className="text-emerald-600">✓ Dipilih: {selectedBerita?.judul_berita}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Images */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Foto Berita *
+                </label>
+                <div 
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 relative ${
+                    isDragOver 
+                      ? 'border-purple-500 bg-purple-50 scale-105 shadow-lg' 
+                      : 'border-gray-300 hover:border-purple-500'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  {isDragOver && (
+                    <div className="absolute inset-0 bg-purple-100 bg-opacity-75 rounded-lg flex items-center justify-center">
+                      <div className="text-purple-600 font-medium text-lg">
+                        Lepaskan foto di sini
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="cursor-pointer flex flex-col items-center space-y-2"
+                  >
+                    <Upload className={`w-8 h-8 transition-colors duration-200 ${
+                      isDragOver ? 'text-purple-600' : 'text-gray-400'
+                    }`} />
+                    <span className={`text-sm transition-colors duration-200 ${
+                      isDragOver ? 'text-purple-700 font-medium' : 'text-gray-600'
+                    }`}>
+                      {isDragOver ? 'Lepaskan foto di sini' : 'Klik untuk upload foto atau drag & drop'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      PNG, JPG, GIF hingga 10MB (Multiple files allowed)
+                    </span>
+                  </label>
+                </div>
+
+                {/* Selected Images Preview */}
+                {selectedImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Foto Terpilih ({selectedImages.length})
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {selectedImages.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            {file.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={resetUploadForm}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedBeritaId || selectedImages.length === 0}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isUploading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Uploading...</span>
+                    </div>
+                  ) : (
+                    "Upload Foto"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
