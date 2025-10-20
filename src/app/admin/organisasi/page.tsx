@@ -851,9 +851,9 @@ export default function AdminOrganisasiPage() {
                     <optgroup label="Kepala Dusun">
                       <option value="Kadus Suka Maju">Kadus Suka Maju</option>
                       <option value="Kadus Beringin">Kadus Beringin</option>
-                      <option value="Kadus Bulp Parangga">Kadus Bulp Parangga</option>
-                      <option value="Kadus Laka">Kadus Laka</option>
-                      <option value="Kadus Kampong Baru">Kadus Kampong Baru</option>
+                      <option value="Kadus Bulu' Parangga">Kadus Bulu' Parangga</option>
+                      <option value="Kadus Lara">Kadus Lara</option>
+                      <option value="Kadus Kampung Baru">Kadus Kampung Baru</option>
                     </optgroup>
                   </select>
                 </div>
@@ -1105,9 +1105,9 @@ export default function AdminOrganisasiPage() {
                     <optgroup label="Kepala Dusun">
                       <option value="Kadus Suka Maju">Kadus Suka Maju</option>
                       <option value="Kadus Beringin">Kadus Beringin</option>
-                      <option value="Kadus Bulp Parangga">Kadus Bulp Parangga</option>
-                      <option value="Kadus Laka">Kadus Laka</option>
-                      <option value="Kadus Kampong Baru">Kadus Kampong Baru</option>
+                      <option value="Kadus Bulu' Parangga">Kadus Bulu' Parangga</option>
+                      <option value="Kadus Lara">Kadus Lara</option>
+                      <option value="Kadus Kampung Baru">Kadus Kampung Baru</option>
                     </optgroup>
                   </select>
                 </div>

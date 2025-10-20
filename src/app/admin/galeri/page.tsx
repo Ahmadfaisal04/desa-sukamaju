@@ -43,6 +43,8 @@ export default function AdminGaleriPage() {
   const [searchBerita, setSearchBerita] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch data from API
   useEffect(() => {
@@ -76,17 +78,20 @@ export default function AdminGaleriPage() {
         // Transform berita data to gallery items
         const gallery: GalleryItem[] = [];
         result.data.forEach((berita: BeritaData) => {
-          berita.gambar_berita.forEach((gambar, index) => {
-            gallery.push({
-              id: `${berita.id_berita}_${index}`,
-              src: gambar,
-              title: berita.judul_berita,
-              category: berita.kategori,
-              date: berita.tanggal_pelaksanaan,
-              description: berita.deskripsi,
-              berita_id: berita.id_berita
+          // Only add berita that have images
+          if (berita.gambar_berita && berita.gambar_berita.length > 0) {
+            berita.gambar_berita.forEach((gambar, index) => {
+              gallery.push({
+                id: `${berita.id_berita}_${index}`,
+                src: gambar,
+                title: berita.judul_berita,
+                category: berita.kategori,
+                date: berita.tanggal_pelaksanaan,
+                description: berita.deskripsi,
+                berita_id: berita.id_berita
+              });
             });
-          });
+          }
         });
         
         setGalleryItems(gallery);
@@ -247,6 +252,78 @@ export default function AdminGaleriPage() {
     }
   };
 
+  // Delete single photo
+  const handleDeletePhoto = async (filename: string) => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/photo/berita/${filename}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert('Berhasil menghapus foto!');
+        setDeleteConfirm(null);
+        fetchBeritaData(); // Refresh data
+      } else {
+        alert(`Gagal menghapus foto: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      alert('Terjadi kesalahan saat menghapus foto');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Bulk delete photos
+  const handleBulkDelete = async () => {
+    if (selectedGallery.length === 0) return;
+
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedGallery.length} foto?`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Get filenames from selected gallery items
+      const filenames = selectedGallery.map(id => {
+        const item = galleryItems.find(item => item.id === id);
+        return item?.src;
+      }).filter(Boolean) as string[];
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/bulk/photo/berita`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filenames }),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert(`Berhasil menghapus ${selectedGallery.length} foto!`);
+        setSelectedGallery([]);
+        fetchBeritaData(); // Refresh data
+      } else {
+        alert(`Gagal menghapus foto: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error bulk deleting photos:', error);
+      alert('Terjadi kesalahan saat menghapus foto');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Get filename from gallery item ID
+  const getFilenameFromId = (id: string) => {
+    const item = galleryItems.find(item => item.id === id);
+    return item?.src;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -341,8 +418,12 @@ export default function AdminGaleriPage() {
             {selectedGallery.length > 0 && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">{selectedGallery.length} dipilih</span>
-                <button className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
-                  Hapus Terpilih
+                <button 
+                  onClick={handleBulkDelete}
+                  disabled={isDeleting}
+                  className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeleting ? "Menghapus..." : "Hapus Terpilih"}
                 </button>
               </div>
             )}
@@ -355,15 +436,17 @@ export default function AdminGaleriPage() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">Semua Foto</h2>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={selectedGallery.length === filteredGallery.length && filteredGallery.length > 0}
-                onChange={handleSelectAll}
-                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-              />
-              <span className="text-sm text-gray-600">Pilih Semua</span>
-            </div>
+            {galleryItems.length > 0 && (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={selectedGallery.length === filteredGallery.length && filteredGallery.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="text-sm text-gray-600">Pilih Semua</span>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -371,122 +454,131 @@ export default function AdminGaleriPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
               <span className="text-gray-500">Memuat galeri...</span>
             </div>
-          ) : error ? (
+          ) : galleryItems.length === 0 ? (
+            // State ketika galeri kosong (tidak ada error)
             <div className="text-center py-12">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X className="w-6 h-6 text-red-600" />
+              <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Camera className="w-12 h-12 text-purple-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Gagal memuat galeri</h3>
-              <p className="text-red-600 mb-4">{error}</p>
-              <button 
-                onClick={fetchBeritaData}
-                className="text-purple-600 hover:text-purple-700 text-sm font-medium"
-              >
-                Coba Lagi
-              </button>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Galeri Masih Kosong</h3>
+              <p className="text-gray-600 max-w-md mx-auto mb-6">
+                Belum ada foto yang tersedia di galeri. Foto akan muncul otomatis dari berita yang memiliki gambar, 
+                atau Anda bisa mengupload foto langsung ke galeri.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="inline-flex items-center justify-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span>Upload Foto ke Galeri</span>
+                </button>
+                <Link
+                  href="/admin/berita"
+                  className="inline-flex items-center justify-center space-x-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Tambah Berita dengan Gambar</span>
+                </Link>
+              </div>
             </div>
           ) : filteredGallery.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredGallery.map((item) => (
-                <div key={item.id} className="group relative">
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${item.src}`}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y5ZmFmYiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPkdhbWJhcjwvdGV4dD4KPC9zdmc+';
-                      }}
-                    />
-                    
-                    {/* Checkbox overlay */}
-                    <div className="absolute top-2 left-2 z-10">
-                      <input
-                        type="checkbox"
-                        checked={selectedGallery.includes(item.id)}
-                        onChange={() => handleSelectGallery(item.id)}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white/80 backdrop-blur-sm cursor-pointer"
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredGallery.map((item) => (
+                  <div key={item.id} className="group relative">
+                    <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${item.src}`}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y5ZmFmYiIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOWNhM2FmIiBmb250LXNpemU9IjE0cHgiPkdhbWJhcjwvdGV4dD4KPC9zdmc+';
+                        }}
                       />
-                    </div>
+                      
+                      {/* Checkbox overlay */}
+                      <div className="absolute top-2 left-2 z-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedGallery.includes(item.id)}
+                          onChange={() => handleSelectGallery(item.id)}
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 bg-white/80 backdrop-blur-sm cursor-pointer"
+                        />
+                      </div>
 
-                    {/* Action buttons overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center pointer-events-none">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2 pointer-events-auto">
-                        <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <Link 
-                          href={`/berita/${item.berita_id}`}
-                          className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"
+                      {/* Delete button overlay */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <button
+                          onClick={() => setDeleteConfirm(item.id)}
+                          className="p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                          title="Hapus foto"
                         >
-                          <Edit3 className="w-4 h-4" />
-                        </Link>
-                        <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30">
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
+                    
+                    <div className="mt-3">
+                      <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{item.title}</h4>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {item.category}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(item.date).toLocaleDateString('id-ID')}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="mt-3">
-                    <h4 className="font-medium text-gray-900 text-sm line-clamp-1">{item.title}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {item.category}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(item.date).toLocaleDateString('id-ID')}
-                      </span>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {filteredGallery.length > 0 && (
+                <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 mt-6 -mx-6 -mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Menampilkan {filteredGallery.length} dari {galleryItems.length} foto
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                        Sebelumnya
+                      </button>
+                      <button className="px-3 py-1 bg-purple-600 text-white rounded text-sm">
+                        1
+                      </button>
+                      <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                        Selanjutnya
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
+            // State ketika ada foto tapi tidak ada yang sesuai filter
             <div className="text-center py-12">
-              <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {galleryItems.length === 0 ? "Belum ada foto" : "Tidak ada foto ditemukan"}
-              </h3>
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada foto ditemukan</h3>
               <p className="text-gray-500 mb-4">
-                {galleryItems.length === 0 
-                  ? "Foto akan muncul otomatis dari berita yang memiliki gambar"
-                  : "Coba ubah filter atau kata kunci pencarian"
-                }
+                Coba ubah filter atau kata kunci pencarian
               </p>
-              <Link
-                href="/admin/berita"
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterCategory("Semua");
+                }}
                 className="inline-flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
               >
-                <Plus className="w-4 h-4" />
-                <span>Kelola Berita</span>
-              </Link>
+                <span>Reset Filter</span>
+              </button>
             </div>
           )}
         </div>
-
-        {/* Pagination */}
-        {!loading && !error && filteredGallery.length > 0 && (
-          <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                Menampilkan {filteredGallery.length} dari {galleryItems.length} foto
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
-                  Sebelumnya
-                </button>
-                <button className="px-3 py-1 bg-purple-600 text-white rounded text-sm">
-                  1
-                </button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
-                  Selanjutnya
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Upload Photo Modal */}
@@ -689,6 +781,40 @@ export default function AdminGaleriPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+                Hapus Foto
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Apakah Anda yakin ingin menghapus foto ini? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleDeletePhoto(getFilenameFromId(deleteConfirm)!)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isDeleting ? "Menghapus..." : "Hapus"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

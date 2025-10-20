@@ -18,7 +18,6 @@ import {
   Upload,
   FileImage,
 } from "lucide-react";
-import { newsData } from "@/data/news";
 
 interface BeritaData {
   id_berita: string;
@@ -35,11 +34,13 @@ export default function AdminBeritaPage() {
   const [filterCategory, setFilterCategory] = useState("Semua");
   const [selectedNews, setSelectedNews] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [beritaData, setBeritaData] = useState<BeritaData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    id_berita: "",
     judul_berita: "",
     kategori: "",
     tanggal_pelaksanaan: "",
@@ -47,6 +48,9 @@ export default function AdminBeritaPage() {
   });
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const categories = [
     "Semua",
@@ -133,6 +137,11 @@ export default function AdminBeritaPage() {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingImage = (imageName: string) => {
+    setExistingImages(prev => prev.filter(img => img !== imageName));
+    setImagesToDelete(prev => [...prev, imageName]);
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -167,16 +176,41 @@ export default function AdminBeritaPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Fungsi untuk auto-resize textarea
+  const handleTextareaResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
   const resetForm = () => {
     setFormData({
+      id_berita: "",
       judul_berita: "",
       kategori: "",
       tanggal_pelaksanaan: "",
       deskripsi: "",
     });
     setSelectedImages([]);
+    setExistingImages([]);
+    setImagesToDelete([]);
     setShowAddModal(false);
+    setShowEditModal(false);
     setIsDragOver(false);
+  };
+
+  const openEditModal = (berita: BeritaData) => {
+    setFormData({
+      id_berita: berita.id_berita,
+      judul_berita: berita.judul_berita,
+      kategori: berita.kategori,
+      tanggal_pelaksanaan: berita.tanggal_pelaksanaan,
+      deskripsi: berita.deskripsi,
+    });
+    setExistingImages(berita.gambar_berita || []);
+    setSelectedImages([]);
+    setImagesToDelete([]);
+    setShowEditModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,7 +239,6 @@ export default function AdminBeritaPage() {
       if (result.code === 200) {
         alert('Berhasil menambahkan berita!');
         resetForm();
-        // Refresh data instead of page reload
         fetchBeritaData();
       } else {
         alert(`Gagal menambahkan berita: ${result.message}`);
@@ -218,9 +251,97 @@ export default function AdminBeritaPage() {
     }
   };
 
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Prepare JSON data for update
+      const updateData = {
+        judul_berita: formData.judul_berita,
+        kategori: formData.kategori,
+        tanggal_pelaksanaan: formData.tanggal_pelaksanaan,
+        deskripsi: formData.deskripsi,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita/${formData.id_berita}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert('Berhasil mengupdate berita!');
+        resetForm();
+        fetchBeritaData();
+      } else {
+        alert(`Gagal mengupdate berita: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error updating news:', error);
+      alert('Terjadi kesalahan saat mengupdate berita');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id_berita: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita/${id_berita}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert('Berhasil menghapus berita!');
+        setDeleteConfirm(null);
+        fetchBeritaData();
+      } else {
+        alert(`Gagal menghapus berita: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      alert('Terjadi kesalahan saat menghapus berita');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedNews.length === 0) return;
+
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedNews.length} berita?`)) {
+      return;
+    }
+
+    try {
+      const deletePromises = selectedNews.map(id => 
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita/${id}`, {
+          method: 'DELETE',
+        })
+      );
+
+      const results = await Promise.all(deletePromises);
+      const allSuccess = results.every(result => result.ok);
+
+      if (allSuccess) {
+        alert(`Berhasil menghapus ${selectedNews.length} berita!`);
+        setSelectedNews([]);
+        fetchBeritaData();
+      } else {
+        alert('Beberapa berita gagal dihapus');
+      }
+    } catch (error) {
+      console.error('Error bulk deleting news:', error);
+      alert('Terjadi kesalahan saat menghapus berita');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {" "}
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
@@ -236,7 +357,8 @@ export default function AdminBeritaPage() {
           <Plus className="w-5 h-5" />
           <span>Tambah Berita</span>
         </button>
-      </div>{" "}
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
@@ -290,6 +412,7 @@ export default function AdminBeritaPage() {
           );
         })}
       </div>
+
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6">
@@ -328,7 +451,10 @@ export default function AdminBeritaPage() {
                 <span className="text-sm text-gray-600">
                   {selectedNews.length} dipilih
                 </span>
-                <button className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200">
+                <button 
+                  onClick={handleBulkDelete}
+                  className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                >
                   Hapus Terpilih
                 </button>
               </div>
@@ -336,6 +462,7 @@ export default function AdminBeritaPage() {
           </div>
         </div>
       </div>
+
       {/* News Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
@@ -460,21 +587,19 @@ export default function AdminBeritaPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <Link
-                          href={`/admin/berita/edit/${berita.id_berita}`}
+                        <button
+                          onClick={() => openEditModal(berita)}
                           className="p-2 text-gray-400 hover:text-emerald-600 transition-colors duration-200"
                           title="Edit"
                         >
                           <Edit3 className="w-4 h-4" />
-                        </Link>
+                        </button>
                         <button
+                          onClick={() => setDeleteConfirm(berita.id_berita)}
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors duration-200"
                           title="Hapus"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                          <MoreVertical className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -600,7 +725,7 @@ export default function AdminBeritaPage() {
                 />
               </div>
 
-              {/* Deskripsi */}
+              {/* Deskripsi - MODIFIED TEXTAREA */}
               <div>
                 <label htmlFor="deskripsi" className="block text-sm font-medium text-gray-700 mb-2">
                   Deskripsi *
@@ -609,12 +734,21 @@ export default function AdminBeritaPage() {
                   id="deskripsi"
                   name="deskripsi"
                   value={formData.deskripsi}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    handleTextareaResize(e);
+                  }}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[120px] max-h-[400px] overflow-y-auto"
                   placeholder="Masukkan deskripsi berita..."
                   required
+                  style={{ minHeight: '120px' }}
                 />
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-gray-500">
+                    {formData.deskripsi.length} karakter
+                  </span>
+                </div>
               </div>
 
               {/* Upload Images */}
@@ -716,6 +850,164 @@ export default function AdminBeritaPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit News Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Edit Berita</h3>
+              <button
+                onClick={resetForm}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="p-6 space-y-6">
+              {/* Judul Berita */}
+              <div>
+                <label htmlFor="edit_judul_berita" className="block text-sm font-medium text-gray-700 mb-2">
+                  Judul Berita *
+                </label>
+                <input
+                  type="text"
+                  id="edit_judul_berita"
+                  name="judul_berita"
+                  value={formData.judul_berita}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Masukkan judul berita..."
+                  required
+                />
+              </div>
+
+              {/* Kategori */}
+              <div>
+                <label htmlFor="edit_kategori" className="block text-sm font-medium text-gray-700 mb-2">
+                  Kategori *
+                </label>
+                <select
+                  id="edit_kategori"
+                  name="kategori"
+                  value={formData.kategori}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  required
+                >
+                  <option value="">Pilih Kategori</option>
+                  <option value="Pembangunan">Pembangunan</option>
+                  <option value="Budaya">Budaya</option>
+                  <option value="Kesehatan">Kesehatan</option>
+                  <option value="Ekonomi">Ekonomi</option>
+                  <option value="Pendidikan">Pendidikan</option>
+                </select>
+              </div>
+
+              {/* Tanggal Pelaksanaan */}
+              <div>
+                <label htmlFor="edit_tanggal_pelaksanaan" className="block text-sm font-medium text-gray-700 mb-2">
+                  Tanggal Pelaksanaan *
+                </label>
+                <input
+                  type="date"
+                  id="edit_tanggal_pelaksanaan"
+                  name="tanggal_pelaksanaan"
+                  value={formData.tanggal_pelaksanaan}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              {/* Deskripsi - MODIFIED TEXTAREA */}
+              <div>
+                <label htmlFor="edit_deskripsi" className="block text-sm font-medium text-gray-700 mb-2">
+                  Deskripsi *
+                </label>
+                <textarea
+                  id="edit_deskripsi"
+                  name="deskripsi"
+                  value={formData.deskripsi}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    handleTextareaResize(e);
+                  }}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[120px] max-h-[400px] overflow-y-auto"
+                  placeholder="Masukkan deskripsi berita..."
+                  required
+                  style={{ minHeight: '120px' }}
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-xs text-gray-500">
+                    {formData.deskripsi.length} karakter
+                  </span>
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Mengupdate...</span>
+                    </div>
+                  ) : (
+                    "Update Berita"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+                Hapus Berita
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Apakah Anda yakin ingin menghapus berita ini? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirm)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
