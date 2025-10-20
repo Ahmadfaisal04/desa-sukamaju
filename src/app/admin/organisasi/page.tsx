@@ -295,7 +295,7 @@ export default function AdminOrganisasiPage() {
       } else if (editingMember.foto) {
         // Gunakan foto lama dengan mendownload dan mengupload ulang
         try {
-          const photoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editingMember.foto}`);
+          const photoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${editingMember.foto}`);
           const photoBlob = await photoResponse.blob();
           const photoFile = new File([photoBlob], editingMember.foto, { type: photoBlob.type });
           formData.append('foto', photoFile);
@@ -631,7 +631,7 @@ export default function AdminOrganisasiPage() {
                       {member.foto ? (
                         <div className="w-12 h-12 relative rounded-full overflow-hidden flex-shrink-0">
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${member.foto}`}
                             alt={member.nama}
                             fill
                             className="object-cover"
@@ -1209,7 +1209,7 @@ export default function AdminOrganisasiPage() {
                   <div className="flex items-center space-x-4">
                     <div className="w-20 h-20 relative rounded-lg overflow-hidden border border-gray-300">
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${editingMember.foto}`}
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${editingMember.foto}`}
                         alt={editingMember.nama}
                         fill
                         className="object-cover"
