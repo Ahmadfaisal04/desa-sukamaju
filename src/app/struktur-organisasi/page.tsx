@@ -162,7 +162,7 @@ export default function StrukturOrganisasi() {
                     {kepalaDesa.foto ? (
                       <div className="w-32 h-32 relative rounded-full mx-auto mb-6 overflow-hidden">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${kepalaDesa.foto}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${kepalaDesa.foto}`}
                           alt={kepalaDesa.nama}
                           fill
                           className="object-cover"
@@ -235,7 +235,7 @@ export default function StrukturOrganisasi() {
                     {sekretarisDesa.foto ? (
                       <div className="aspect-square relative overflow-hidden">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${sekretarisDesa.foto}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${sekretarisDesa.foto}`}
                           alt={sekretarisDesa.nama}
                           fill
                           className="object-cover"
@@ -311,7 +311,7 @@ export default function StrukturOrganisasi() {
                     {member.foto ? (
                       <div className="aspect-square relative overflow-hidden">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${member.foto}`}
                           alt={member.nama}
                           fill
                           className="object-cover"
@@ -389,7 +389,7 @@ export default function StrukturOrganisasi() {
                     {member.foto ? (
                       <div className="aspect-square relative overflow-hidden">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${member.foto}`}
                           alt={member.nama}
                           fill
                           className="object-cover"
@@ -466,7 +466,7 @@ export default function StrukturOrganisasi() {
                       {member.foto ? (
                         <div className="w-24 h-24 relative rounded-full mx-auto mb-6 overflow-hidden">
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${member.foto}`}
                             alt={member.nama}
                             fill
                             className="object-cover"
@@ -539,7 +539,7 @@ export default function StrukturOrganisasi() {
                     {member.foto ? (
                       <div className="w-24 h-24 relative rounded-full mx-auto mb-6 overflow-hidden">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/${member.foto}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${member.foto}`}
                           alt={member.nama}
                           fill
                           className="object-cover"
