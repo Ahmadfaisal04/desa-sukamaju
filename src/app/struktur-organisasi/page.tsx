@@ -667,7 +667,7 @@ export default function StrukturOrganisasi() {
                       {/* KADUS Section */}
                       <div className="w-full max-w-xs space-y-3">
                         <h4 className="text-center font-bold text-gray-700 text-sm">KEPALA DUSUN</h4>
-                        {["Kadus Suka Maju", "Kadus Beringin", "Kadus Bulp Parangga", "Kadus Laka", "Kadus Kampong Baru"].map((jabatan) => {
+                        {["Kadus Suka Maju", "Kadus Beringin", "Kadus Bulu' Parangga", "Kadus Lara", "Kadus Kampung Baru"].map((jabatan) => {
                           const member = kepalaDusun.find(m => m.jabatan === jabatan);
                           return (
                             <div key={jabatan} className="bg-yellow-100 border-2 border-yellow-600 rounded-lg p-3 text-center">
@@ -801,7 +801,7 @@ export default function StrukturOrganisasi() {
                         <div className="max-w-5xl">
                           <h4 className="text-center font-bold text-gray-700 text-lg mb-20">KEPALA DUSUN</h4>
                           <div className="grid grid-cols-5 gap-3">
-                            {["Kadus Suka Maju", "Kadus Beringin", "Kadus Bulp Parangga", "Kadus Laka", "Kadus Kampong Baru"].map((jabatan) => {
+                            {["Kadus Suka Maju", "Kadus Beringin", "Kadus Bulu' Parangga", "Kadus Lara", "Kadus Kampung Baru"].map((jabatan) => {
                               const member = kepalaDusun.find(m => m.jabatan === jabatan);
                               return (
                                 <div key={jabatan} className="bg-yellow-100 border-2 border-yellow-600 rounded-lg p-4 text-center">
