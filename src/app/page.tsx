@@ -11,7 +11,17 @@ import {
   Calendar,
   ChevronRight,
 } from "lucide-react";
-import { newsData } from "@/data/news";
+
+// Interface untuk data berita dari API
+interface BeritaData {
+  id_berita: string;
+  judul_berita: string;
+  kategori: string;
+  tanggal_pelaksanaan: string;
+  deskripsi: string;
+  gambar_berita: string[];
+  created_at: string;
+}
 
 // Hook untuk animasi countup
 const useCountUp = (
@@ -86,10 +96,50 @@ const StatCard = ({
 };
 
 export default function Home() {
-  const latestNews = newsData.slice(0, 3);
+  const [latestNews, setLatestNews] = useState<BeritaData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [startStatsAnimation, setStartStatsAnimation] = useState(false);
   const statsRef = useRef<HTMLElement>(null);
 
+  // Fetch data berita dari API
+  useEffect(() => {
+    const fetchLatestNews = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita`);
+        
+        if (!response.ok) {
+          throw new Error('Gagal mengambil data berita');
+        }
+
+        const result = await response.json();
+
+        if (result.code === 200) {
+          // Ambil 3 berita terbaru dan urutkan berdasarkan tanggal terbaru
+          const sortedNews = (result.data || [])
+            .sort((a: BeritaData, b: BeritaData) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .slice(0, 3);
+          
+          setLatestNews(sortedNews);
+          setError(null);
+        } else {
+          throw new Error(result.message || 'Gagal mengambil data berita');
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        setError('Terjadi kesalahan saat mengambil data berita');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestNews();
+  }, []);
+
+  // Intersection Observer untuk animasi stats
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -113,9 +163,14 @@ export default function Home() {
     };
   }, [startStatsAnimation]);
 
+  // Fungsi untuk mendapatkan excerpt dari deskripsi
+  const getExcerpt = (text: string, maxLength: number = 120) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   return (
     <div className="bg-gray-50">
-      {" "}
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-blue-600 text-white py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -160,7 +215,7 @@ export default function Home() {
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </div>
-            </div>{" "}
+            </div>
             <div
               className="relative"
               data-aos="fade-left"
@@ -199,7 +254,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>{" "}
+      </section>
+
       {/* Quick Stats */}
       <section ref={statsRef} className="py-16 bg-white">
         <div className="container mx-auto px-4">
@@ -218,7 +274,6 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {" "}
             <div
               data-aos="zoom-in"
               data-aos-delay="100"
@@ -281,7 +336,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>{" "}
+      </section>
+
       {/* Latest News */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -297,67 +353,115 @@ export default function Home() {
               Dapatkan informasi terbaru seputar kegiatan dan perkembangan di
               Desa Sukamaju
             </p>
-          </div>{" "}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {latestNews.map((news, index) => (
-              <div
-                key={news.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-                data-aos-duration="800"
-              >
-                <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-emerald-600/20 flex items-center justify-center">
-                    <span className="text-emerald-700 font-semibold">
-                      Foto Berita {index + 1}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>
-                      {new Date(news.date).toLocaleDateString("id-ID")}
-                    </span>
-                    <span>•</span>
-                    <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
-                      {news.category}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors duration-300">
-                    {news.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {news.excerpt}
-                  </p>
-                  <Link
-                    href={`/berita/${news.id}`}
-                    className="inline-flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 font-medium group"
-                  >
-                    <span>Baca Selengkapnya</span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>{" "}
-          <div
-            className="text-center"
-            data-aos="fade-up"
-            data-aos-delay="300"
-            data-aos-duration="600"
-          >
-            <Link
-              href="/berita"
-              className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 hover-lift"
-            >
-              <span>Lihat Semua Berita</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
           </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-red-600 text-2xl">!</span>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Gagal memuat berita
+              </h3>
+              <p className="text-red-600 mb-4">{error}</p>
+            </div>
+          ) : latestNews.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                {latestNews.map((news, index) => (
+                  <div
+                    key={news.id_berita}
+                    className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
+                    data-aos="fade-up"
+                    data-aos-delay={index * 100}
+                    data-aos-duration="800"
+                  >
+                    <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 relative overflow-hidden">
+                      {news.gambar_berita && news.gambar_berita.length > 0 ? (
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${news.gambar_berita[0]}`}
+                          alt={news.judul_berita}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            // Fallback ke gradient background jika gambar error
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback jika tidak ada gambar atau gambar error */}
+                      <div className={`absolute inset-0 bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center ${news.gambar_berita && news.gambar_berita.length > 0 ? 'hidden' : ''}`}>
+                        <span className="text-emerald-700 font-semibold">
+                          {news.kategori}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {new Date(news.tanggal_pelaksanaan).toLocaleDateString("id-ID")}
+                        </span>
+                        <span>•</span>
+                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
+                          {news.kategori}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors duration-300 line-clamp-2">
+                        {news.judul_berita}
+                      </h3>
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {getExcerpt(news.deskripsi)}
+                      </p>
+                      <Link
+                        href={`/berita/${news.id_berita}`}
+                        className="inline-flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 font-medium group"
+                      >
+                        <span>Baca Selengkapnya</span>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                className="text-center"
+                data-aos="fade-up"
+                data-aos-delay="300"
+                data-aos-duration="600"
+              >
+                <Link
+                  href="/berita"
+                  className="inline-flex items-center space-x-2 bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 hover-lift"
+                >
+                  <span>Lihat Semua Berita</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-gray-400 text-2xl">📰</span>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Belum ada berita
+              </h3>
+              <p className="text-gray-500">
+                Tidak ada berita tersedia saat ini.
+              </p>
+            </div>
+          )}
         </div>
-      </section>{" "}
+      </section>
+
       {/* Vision Mission */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
@@ -382,7 +486,7 @@ export default function Home() {
                 <p className="text-lg text-gray-700 leading-relaxed">
                   "Mewujudkan Masyarakat Adil dan Makmur"
                 </p>
-              </div>{" "}
+              </div>
               <div
                 data-aos="fade-right"
                 data-aos-delay="400"
@@ -445,7 +549,7 @@ export default function Home() {
                     </span>
                   </li>
                 </ul>
-              </div>{" "}
+              </div>
             </div>
             <div
               className="relative"
