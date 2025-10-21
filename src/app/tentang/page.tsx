@@ -178,7 +178,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
     `.trim();
 
     // Nomor WhatsApp tujuan dari API atau fallback
-    const defaultWhatsapp = "62882022452792"; // Fallback jika API tidak tersedia
+    const defaultWhatsapp = "6281345369584"; // Fallback jika API tidak tersedia
     let whatsappNumber = defaultWhatsapp;
 
     // Gunakan nomor dari API jika tersedia
@@ -332,7 +332,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             >
               <StatCard
                 icon={Users}
-                value={5432}
+                value={1.698}
                 label="Jumlah Penduduk"
                 color="bg-blue-600"
                 startAnimation={startStatsAnimation}
@@ -345,7 +345,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             >
               <StatCard
                 icon={Building}
-                value={1654}
+                value={461}
                 label="Kepala Keluarga"
                 color="bg-purple-600"
                 startAnimation={startStatsAnimation}

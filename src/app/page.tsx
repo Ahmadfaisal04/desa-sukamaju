@@ -239,7 +239,7 @@ export default function Home() {
                     data-aos-delay="700"
                   >
                     <Users className="w-6 h-6 text-emerald-200" />
-                    <span>5.432 Jiwa (1.654 KK)</span>
+                    <span>1.698 Jiwa (461 KK)</span>
                   </div>
                   <div
                     className="flex items-center space-x-3"
@@ -247,7 +247,7 @@ export default function Home() {
                     data-aos-delay="800"
                   >
                     <Building className="w-6 h-6 text-emerald-200" />
-                    <span>3 Dusun, 8 RW, 24 RT</span>
+                    <span>5 Dusun, 13 RT</span>
                   </div>
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function Home() {
             >
               <StatCard
                 icon={Users}
-                value={5432}
+                value={1.698}
                 label="Total Penduduk"
                 color="bg-emerald-600"
                 bgColor="from-emerald-50 to-teal-50"
@@ -296,7 +296,7 @@ export default function Home() {
             >
               <StatCard
                 icon={Building}
-                value={1654}
+                value={461}
                 label="Kepala Keluarga"
                 color="bg-blue-600"
                 bgColor="from-blue-50 to-indigo-50"
@@ -311,7 +311,7 @@ export default function Home() {
             >
               <StatCard
                 icon={MapPin}
-                value={3}
+                value={5}
                 label="Dusun"
                 color="bg-purple-600"
                 bgColor="from-purple-50 to-pink-50"
@@ -326,7 +326,7 @@ export default function Home() {
             >
               <StatCard
                 icon={Calendar}
-                value={24}
+                value={13}
                 label="Rukun Tetangga"
                 color="bg-orange-600"
                 bgColor="from-orange-50 to-red-50"
@@ -389,14 +389,22 @@ export default function Home() {
                           className="object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
+                            target.style.display = "none";
                             // Fallback ke gradient background jika gambar error
-                            target.nextElementSibling?.classList.remove('hidden');
+                            target.nextElementSibling?.classList.remove(
+                              "hidden"
+                            );
                           }}
                         />
                       ) : null}
                       {/* Fallback jika tidak ada gambar atau gambar error */}
-                      <div className={`absolute inset-0 bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center ${news.gambar_berita && news.gambar_berita.length > 0 ? 'hidden' : ''}`}>
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center ${
+                          news.gambar_berita && news.gambar_berita.length > 0
+                            ? "hidden"
+                            : ""
+                        }`}
+                      >
                         <span className="text-emerald-700 font-semibold">
                           {news.kategori}
                         </span>
@@ -406,7 +414,9 @@ export default function Home() {
                       <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {new Date(news.tanggal_pelaksanaan).toLocaleDateString("id-ID")}
+                          {new Date(
+                            news.tanggal_pelaksanaan
+                          ).toLocaleDateString("id-ID")}
                         </span>
                         <span>•</span>
                         <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-medium">
