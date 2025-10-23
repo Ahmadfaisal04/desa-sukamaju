@@ -225,7 +225,7 @@ export default function AdminGaleriPage() {
       // Tentukan endpoint berdasarkan pilihan
       const endpoint = selectedBeritaId === "lainnya" 
         ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/galeri/photo`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita/photo`;
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/photo/berita`;
 
       const response = await fetch(endpoint, {
         method: 'POST',
