@@ -10,6 +10,7 @@ import {
   Building,
   Calendar,
   ChevronRight,
+  Home as HomeIcon,
 } from "lucide-react";
 
 // Interface untuk data berita dari API
@@ -21,6 +22,13 @@ interface BeritaData {
   deskripsi: string;
   gambar_berita: string[];
   created_at: string;
+}
+
+// Interface untuk data penduduk
+interface PendudukData {
+  id_penduduk: string;
+  total_penduduk: string;
+  total_kepala_keluarga: string;
 }
 
 // Hook untuk animasi countup
@@ -97,46 +105,61 @@ const StatCard = ({
 
 export default function Home() {
   const [latestNews, setLatestNews] = useState<BeritaData[]>([]);
+  const [pendudukData, setPendudukData] = useState<PendudukData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startStatsAnimation, setStartStatsAnimation] = useState(false);
   const statsRef = useRef<HTMLElement>(null);
 
-  // Fetch data berita dari API
+  // Fetch data berita dan penduduk dari API
   useEffect(() => {
-    const fetchLatestNews = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita`);
         
-        if (!response.ok) {
+        // Fetch data berita
+        const beritaResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/berita`);
+        
+        if (!beritaResponse.ok) {
           throw new Error('Gagal mengambil data berita');
         }
 
-        const result = await response.json();
+        const beritaResult = await beritaResponse.json();
 
-        if (result.code === 200) {
+        if (beritaResult.code === 200) {
           // Ambil 3 berita terbaru dan urutkan berdasarkan tanggal terbaru
-          const sortedNews = (result.data || [])
+          const sortedNews = (beritaResult.data || [])
             .sort((a: BeritaData, b: BeritaData) => 
               new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             )
             .slice(0, 3);
           
           setLatestNews(sortedNews);
-          setError(null);
-        } else {
-          throw new Error(result.message || 'Gagal mengambil data berita');
         }
+
+        // Fetch data penduduk
+        const pendudukResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/penduduk`);
+        
+        if (!pendudukResponse.ok) {
+          throw new Error('Gagal mengambil data penduduk');
+        }
+
+        const pendudukResult = await pendudukResponse.json();
+
+        if (pendudukResult.code === 200) {
+          setPendudukData(pendudukResult.data);
+        }
+
+        setError(null);
       } catch (error) {
-        console.error('Error fetching news:', error);
-        setError('Terjadi kesalahan saat mengambil data berita');
+        console.error('Error fetching data:', error);
+        setError('Terjadi kesalahan saat mengambil data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLatestNews();
+    fetchData();
   }, []);
 
   // Intersection Observer untuk animasi stats
@@ -167,6 +190,14 @@ export default function Home() {
   const getExcerpt = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  };
+
+  // Hitung rata-rata penduduk per KK
+  const getAveragePerKK = () => {
+    if (!pendudukData) return 0;
+    const totalPenduduk = parseInt(pendudukData.total_penduduk);
+    const totalKK = parseInt(pendudukData.total_kepala_keluarga);
+    return totalKK > 0 ? Math.round(totalPenduduk / totalKK) : 0;
   };
 
   return (
@@ -239,7 +270,12 @@ export default function Home() {
                     data-aos-delay="700"
                   >
                     <Users className="w-6 h-6 text-emerald-200" />
-                    <span>1.698 Jiwa (461 KK)</span>
+                    <span>
+                      {pendudukData ? 
+                        `${parseInt(pendudukData.total_penduduk).toLocaleString('id-ID')} Jiwa (${parseInt(pendudukData.total_kepala_keluarga).toLocaleString('id-ID')} KK)` 
+                        : 'Loading...'
+                      }
+                    </span>
                   </div>
                   <div
                     className="flex items-center space-x-3"
@@ -281,7 +317,7 @@ export default function Home() {
             >
               <StatCard
                 icon={Users}
-                value={1.698}
+                value={pendudukData ? parseInt(pendudukData.total_penduduk) : 0}
                 label="Total Penduduk"
                 color="bg-emerald-600"
                 bgColor="from-emerald-50 to-teal-50"
@@ -295,8 +331,8 @@ export default function Home() {
               data-aos-duration="600"
             >
               <StatCard
-                icon={Building}
-                value={461}
+                icon={HomeIcon}
+                value={pendudukData ? parseInt(pendudukData.total_kepala_keluarga) : 0}
                 label="Kepala Keluarga"
                 color="bg-blue-600"
                 bgColor="from-blue-50 to-indigo-50"
@@ -310,7 +346,7 @@ export default function Home() {
               data-aos-duration="600"
             >
               <StatCard
-                icon={MapPin}
+                icon={Building}
                 value={5}
                 label="Dusun"
                 color="bg-purple-600"
@@ -335,6 +371,21 @@ export default function Home() {
               />
             </div>
           </div>
+
+          {/* Additional Info */}
+          {pendudukData && (
+            <div
+              className="mt-12 text-center"
+              data-aos="fade-up"
+              data-aos-delay="500"
+            >
+              <div className="inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-full px-6 py-3">
+                <span className="text-emerald-700 font-medium">
+                  Rata-rata {getAveragePerKK()} orang per Kepala Keluarga
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

@@ -11,6 +11,8 @@ import {
   Plus,
   Edit3,
   Trash2,
+  UserPlus,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -39,13 +41,26 @@ interface AparatData {
   foto: string;
 }
 
+// Interface untuk data penduduk
+interface PendudukData {
+  id_penduduk: string;
+  total_penduduk: string;
+  total_kepala_keluarga: string;
+}
+
 export default function AdminDashboard() {
   const [recentNews, setRecentNews] = useState<BeritaData[]>([]);
   const [recentGallery, setRecentGallery] = useState<any[]>([]);
   const [aparatData, setAparatData] = useState<AparatData[]>([]);
+  const [pendudukData, setPendudukData] = useState<PendudukData | null>(null);
   const [totalBerita, setTotalBerita] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditingPenduduk, setIsEditingPenduduk] = useState(false);
+  const [editPendudukForm, setEditPendudukForm] = useState({
+    total_penduduk: "",
+    total_kepala_keluarga: ""
+  });
 
   // Fetch data dari API
   useEffect(() => {
@@ -107,6 +122,20 @@ export default function AdminDashboard() {
           setAparatData(aparatResult.data || []);
         }
 
+        // Fetch data penduduk
+        const pendudukResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/penduduk`);
+        if (!pendudukResponse.ok) throw new Error('Gagal mengambil data penduduk');
+        
+        const pendudukResult = await pendudukResponse.json();
+        
+        if (pendudukResult.code === 200) {
+          setPendudukData(pendudukResult.data);
+          setEditPendudukForm({
+            total_penduduk: pendudukResult.data.total_penduduk,
+            total_kepala_keluarga: pendudukResult.data.total_kepala_keluarga
+          });
+        }
+
         setError(null);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -123,6 +152,35 @@ export default function AdminDashboard() {
   const totalGambar = recentNews.reduce((total, berita) => {
     return total + (berita.gambar_berita ? berita.gambar_berita.length : 0);
   }, 0);
+
+  // Fungsi untuk update data penduduk
+  const handleUpdatePenduduk = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/penduduk`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          total_penduduk: editPendudukForm.total_penduduk,
+          total_kepala_keluarga: editPendudukForm.total_kepala_keluarga
+        })
+      });
+
+      if (!response.ok) throw new Error('Gagal mengupdate data penduduk');
+
+      const result = await response.json();
+      
+      if (result.code === 200) {
+        setPendudukData(result.data);
+        setIsEditingPenduduk(false);
+        setError(null);
+      }
+    } catch (error) {
+      console.error('Error updating penduduk data:', error);
+      setError('Terjadi kesalahan saat mengupdate data penduduk');
+    }
+  };
 
   // Fungsi untuk mendapatkan URL gambar
   const getImageUrl = (filename: string) => {
@@ -236,41 +294,109 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Total Penduduk Card */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">
-                Struktur Organisasi
+                Total Penduduk
               </p>
-              <p className="text-3xl font-bold text-gray-900">
-                {aparatData.length}
-              </p>
+              {isEditingPenduduk ? (
+                <input
+                  type="number"
+                  value={editPendudukForm.total_penduduk}
+                  onChange={(e) => setEditPendudukForm({
+                    ...editPendudukForm,
+                    total_penduduk: e.target.value
+                  })}
+                  className="text-3xl font-bold text-gray-900 w-24 border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900">
+                  {pendudukData?.total_penduduk || 0}
+                </p>
+              )}
             </div>
-            <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center">
-              <Users className="w-7 h-7 text-emerald-600" />
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+              <UserPlus className="w-7 h-7 text-green-600" />
             </div>
           </div>
-          <div className="mt-4 flex items-center text-sm">
-            <Calendar className="w-4 h-4 text-gray-400 mr-1" />
-            <span className="text-gray-600 font-medium">Struktur lengkap</span>
+          <div className="mt-4 flex items-center justify-between">
+            {isEditingPenduduk ? (
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleUpdatePenduduk}
+                  className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                >
+                  Simpan
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingPenduduk(false);
+                    setEditPendudukForm({
+                      total_penduduk: pendudukData?.total_penduduk || "",
+                      total_kepala_keluarga: pendudukData?.total_kepala_keluarga || ""
+                    });
+                  }}
+                  className="px-2 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors"
+                >
+                  Batal
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center text-sm">
+                  <Home className="w-4 h-4 text-gray-400 mr-1" />
+                  <span className="text-gray-600 font-medium">
+                    {pendudukData?.total_kepala_keluarga || 0} KK
+                  </span>
+                </div>
+                <button
+                  onClick={() => setIsEditingPenduduk(true)}
+                  className="text-green-600 hover:text-green-700 text-sm font-medium"
+                >
+                  Edit
+                </button>
+              </>
+            )}
           </div>
         </div>
 
+        {/* Total Kepala Keluarga Card */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">
-                Total Pengunjung
+                Kepala Keluarga
               </p>
-              <p className="text-3xl font-bold text-gray-900">1,234</p>
+              {isEditingPenduduk ? (
+                <input
+                  type="number"
+                  value={editPendudukForm.total_kepala_keluarga}
+                  onChange={(e) => setEditPendudukForm({
+                    ...editPendudukForm,
+                    total_kepala_keluarga: e.target.value
+                  })}
+                  className="text-3xl font-bold text-gray-900 w-24 border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900">
+                  {pendudukData?.total_kepala_keluarga || 0}
+                </p>
+              )}
             </div>
             <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Eye className="w-7 h-7 text-orange-600" />
+              <Home className="w-7 h-7 text-orange-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-            <span className="text-green-600 font-medium">+15% bulan ini</span>
+            <UserPlus className="w-4 h-4 text-gray-400 mr-1" />
+            <span className="text-gray-600 font-medium">
+              {pendudukData ? 
+                `Rata-rata ${Math.round(parseInt(pendudukData.total_penduduk) / parseInt(pendudukData.total_kepala_keluarga))} orang/KK` 
+                : 'Data tidak tersedia'
+              }
+            </span>
           </div>
         </div>
       </div>

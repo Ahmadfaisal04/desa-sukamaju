@@ -11,6 +11,7 @@ import {
   School,
   Phone,
   Mail,
+  Home,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
@@ -22,6 +23,12 @@ interface KontakData {
   facebook: string;
   youtube: string;
   instagram: string;
+}
+
+interface PendudukData {
+  id_penduduk: string;
+  total_penduduk: string;
+  total_kepala_keluarga: string;
 }
 
 // Hook untuk animasi countup
@@ -96,28 +103,52 @@ const StatCard = ({
 export default function TentangDesa() {
   const [startStatsAnimation, setStartStatsAnimation] = useState(false);
   const [kontakData, setKontakData] = useState<KontakData | null>(null);
+  const [pendudukData, setPendudukData] = useState<PendudukData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const statsRef = useRef<HTMLElement>(null);
 
+  // Fetch data kontak dan penduduk
   useEffect(() => {
-    const fetchKontakData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
+        setLoading(true);
+        
+        // Fetch data kontak
+        const kontakResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/kontak/b094eab0-a132-11f0-b34c-482ae3455d6d`
         );
-        const result = await response.json();
+        const kontakResult = await kontakResponse.json();
 
-        if (result.code === 200 && result.data) {
-          setKontakData(result.data);
+        if (kontakResult.code === 200 && kontakResult.data) {
+          setKontakData(kontakResult.data);
         }
+
+        // Fetch data penduduk
+        const pendudukResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/penduduk`
+        );
+        
+        if (!pendudukResponse.ok) {
+          throw new Error('Gagal mengambil data penduduk');
+        }
+
+        const pendudukResult = await pendudukResponse.json();
+
+        if (pendudukResult.code === 200) {
+          setPendudukData(pendudukResult.data);
+        }
+
+        setError(null);
       } catch (error) {
-        console.error("Error fetching kontak data:", error);
+        console.error("Error fetching data:", error);
+        setError('Terjadi kesalahan saat mengambil data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchKontakData();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -208,6 +239,15 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
     // Tampilkan pesan sukses
     alert("Pengaduan Anda akan dikirim melalui WhatsApp. Terima kasih!");
   };
+
+  // Hitung rata-rata penduduk per KK
+  const getAveragePerKK = () => {
+    if (!pendudukData) return 0;
+    const totalPenduduk = parseInt(pendudukData.total_penduduk);
+    const totalKK = parseInt(pendudukData.total_kepala_keluarga);
+    return totalKK > 0 ? Math.round(totalPenduduk / totalKK) : 0;
+  };
+
   return (
     <div className="bg-gray-50">
       {" "}
@@ -263,9 +303,21 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 data-aos="fade-up"
                 data-aos-delay="600"
               >
-                Desa Sukamaju memiliki luas wilayah 2.350 Ha dan jumlah penduduk
-                1.698 jiwa terdiri dari laki-laki 889 jiwa, perempuan 817 jiwa,
-                sedangkan jumlah Kepala Keluarga 461 KK.
+                Desa Sukamaju memiliki luas wilayah 2.350 Ha dan jumlah penduduk{" "}
+                <span className="font-semibold text-emerald-600">
+                  {pendudukData ? 
+                    `${parseInt(pendudukData.total_penduduk).toLocaleString('id-ID')} jiwa` 
+                    : 'Loading...'
+                  }
+                </span>{" "}
+                terdiri dari laki-laki 889 jiwa, perempuan 817 jiwa,
+                sedangkan jumlah Kepala Keluarga{" "}
+                <span className="font-semibold text-emerald-600">
+                  {pendudukData ? 
+                    `${parseInt(pendudukData.total_kepala_keluarga).toLocaleString('id-ID')} KK` 
+                    : 'Loading...'
+                  }
+                </span>.
               </p>
             </div>
             <div
@@ -319,7 +371,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             >
               <StatCard
                 icon={MapPin}
-                value={15.5}
+                value={2350}
                 label="Luas Wilayah"
                 color="bg-emerald-600"
                 startAnimation={startStatsAnimation}
@@ -332,7 +384,7 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
             >
               <StatCard
                 icon={Users}
-                value={1.698}
+                value={pendudukData ? parseInt(pendudukData.total_penduduk) : 0}
                 label="Jumlah Penduduk"
                 color="bg-blue-600"
                 startAnimation={startStatsAnimation}
@@ -344,8 +396,8 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               data-aos-duration="600"
             >
               <StatCard
-                icon={Building}
-                value={461}
+                icon={Home}
+                value={pendudukData ? parseInt(pendudukData.total_kepala_keluarga) : 0}
                 label="Kepala Keluarga"
                 color="bg-purple-600"
                 startAnimation={startStatsAnimation}
@@ -364,7 +416,24 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 startAnimation={startStatsAnimation}
               />
             </div>
-          </div>{" "}
+          </div>
+
+          {/* Additional Info */}
+          {pendudukData && (
+            <div
+              className="mt-8 text-center"
+              data-aos="fade-up"
+              data-aos-delay="600"
+            >
+              <div className="inline-flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-full px-6 py-3">
+                <span className="text-emerald-700 font-medium">
+                  Rata-rata {getAveragePerKK()} orang per Kepala Keluarga
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Batas Wilayah */}
           <div
             className="mt-12 bg-white rounded-xl shadow-lg p-8"
             data-aos="fade-up"
@@ -555,8 +624,10 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
                 Sumber Daya Manusia
               </h3>
               <p className="text-gray-600 text-center">
-                Penduduk usia produktif yang tinggi dengan budaya gotong royong
-                dan musyawarah yang kuat
+                {pendudukData ? 
+                  `${parseInt(pendudukData.total_penduduk).toLocaleString('id-ID')} penduduk usia produktif` 
+                  : 'Loading...'
+                } dengan budaya gotong royong dan musyawarah yang kuat
               </p>
             </div>
             <div
@@ -692,7 +763,10 @@ Tanggal: ${new Date().toLocaleDateString("id-ID")}
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  Penduduk usia produktif yang besar dengan SDM yang baik
+                  {pendudukData ? 
+                    `${parseInt(pendudukData.total_penduduk).toLocaleString('id-ID')} penduduk usia produktif` 
+                    : 'Loading...'
+                  } dengan SDM yang baik
                 </li>
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
