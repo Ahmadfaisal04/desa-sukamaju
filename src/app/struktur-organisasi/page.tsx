@@ -109,7 +109,7 @@ export default function StrukturOrganisasi() {
                   data-aos-duration="1000"
                 >
                   Mengenal para pemimpin dan perangkat desa yang mengabdi untuk
-                  kemajuan Desa Sejahtera
+                  kemajuan Desa Sukamaju
                 </p>
               </div>
             </div>

@@ -121,7 +121,7 @@ export default function GaleriPage() {
             <p 
               className="text-lg md:text-xl text-emerald-100 leading-relaxed"
             >
-              Dokumentasi kegiatan dan keindahan Desa Sejahtera dalam gambar
+              Dokumentasi kegiatan dan keindahan Desa Sukamaju dalam gambar
             </p>
           </div>
         </div>

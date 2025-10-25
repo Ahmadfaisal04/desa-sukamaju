@@ -160,7 +160,7 @@ export default function BeritaPage() {
             </h1>
             <p className="text-base md:text-lg text-emerald-100 leading-relaxed">
               Dapatkan informasi terkini seputar kegiatan dan perkembangan di
-              Desa Sejahtera
+              Desa Sukamaju
             </p>
           </div>
         </div>
