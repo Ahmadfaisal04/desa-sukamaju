@@ -66,6 +66,8 @@ export default function AdminOrganisasiPage() {
   });
   const [addLoading, setAddLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [isAddStillActive, setIsAddStillActive] = useState(false);
+  const [isEditStillActive, setIsEditStillActive] = useState(false);
 
   useEffect(() => {
     const fetchAparatData = async () => {
@@ -222,7 +224,7 @@ export default function AdminOrganisasiPage() {
       formData.append('email', addFormData.email);
       formData.append('status', addFormData.status);
       formData.append('periode_mulai', addFormData.periode_mulai);
-      formData.append('periode_selesai', addFormData.periode_selesai);
+      formData.append('periode_selesai', isAddStillActive ? 'Sekarang' : addFormData.periode_selesai);
       
 
       
@@ -250,6 +252,7 @@ export default function AdminOrganisasiPage() {
           nama_dusun: "",
           foto: null,
         });
+        setIsAddStillActive(false);
         
         // Close modal
         setShowAddModal(false);
@@ -284,7 +287,7 @@ export default function AdminOrganisasiPage() {
       formData.append('email', editFormData.email);
       formData.append('status', editFormData.status);
       formData.append('periode_mulai', editFormData.periode_mulai);
-      formData.append('periode_selesai', editFormData.periode_selesai);
+      formData.append('periode_selesai', isEditStillActive ? 'Sekarang' : editFormData.periode_selesai);
       
 
       
@@ -326,6 +329,7 @@ export default function AdminOrganisasiPage() {
           nama_dusun: "",
           foto: null,
         });
+        setIsEditStillActive(false);
         
         // Refresh data
         await refreshData();
@@ -345,6 +349,7 @@ export default function AdminOrganisasiPage() {
   // Handle open edit modal
   const handleEditMember = (member: AparatData) => {
     setEditingMember(member);
+    const isStillActive = member.periode_selesai.toLowerCase() === 'sekarang';
     setEditFormData({
       nama: member.nama,
       jabatan: member.jabatan,
@@ -352,10 +357,11 @@ export default function AdminOrganisasiPage() {
       email: member.email,
       status: member.status,
       periode_mulai: member.periode_mulai,
-      periode_selesai: member.periode_selesai,
+      periode_selesai: isStillActive ? '' : member.periode_selesai,
       nama_dusun: "",
       foto: null,
     });
+    setIsEditStillActive(isStillActive);
     setShowEditModal(true);
   };
 
@@ -935,14 +941,31 @@ export default function AdminOrganisasiPage() {
                   <input
                     type="number"
                     id="periode_selesai"
-                    required
+                    required={!isAddStillActive}
+                    disabled={isAddStillActive}
                     min="1900"
                     max="2100"
                     value={addFormData.periode_selesai}
                     onChange={(e) => setAddFormData(prev => ({ ...prev, periode_selesai: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="2029"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder={isAddStillActive ? "Sekarang" : "2029"}
                   />
+                  <div className="mt-2">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isAddStillActive}
+                        onChange={(e) => {
+                          setIsAddStillActive(e.target.checked);
+                          if (e.target.checked) {
+                            setAddFormData(prev => ({ ...prev, periode_selesai: '' }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-600">Masih Aktif (Sekarang)</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -1189,14 +1212,31 @@ export default function AdminOrganisasiPage() {
                   <input
                     type="number"
                     id="edit_periode_selesai"
-                    required
+                    required={!isEditStillActive}
+                    disabled={isEditStillActive}
                     min="1900"
                     max="2100"
                     value={editFormData.periode_selesai}
                     onChange={(e) => setEditFormData(prev => ({ ...prev, periode_selesai: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="2029"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder={isEditStillActive ? "Sekarang" : "2029"}
                   />
+                  <div className="mt-2">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isEditStillActive}
+                        onChange={(e) => {
+                          setIsEditStillActive(e.target.checked);
+                          if (e.target.checked) {
+                            setEditFormData(prev => ({ ...prev, periode_selesai: '' }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-600">Masih Aktif (Sekarang)</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
