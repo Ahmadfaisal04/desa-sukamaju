@@ -424,9 +424,10 @@ export default function Home() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                 {latestNews.map((news, index) => (
-                  <div
+                  <Link
                     key={news.id_berita}
-                    className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
+                    href={`/berita/${news.id_berita}`}
+                    className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift block"
                     data-aos="fade-up"
                     data-aos-delay={index * 100}
                     data-aos-duration="800"
@@ -437,7 +438,7 @@ export default function Home() {
                           src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/berita/${news.gambar_berita[0]}`}
                           alt={news.judul_berita}
                           fill
-                          className="object-cover"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";
@@ -480,15 +481,14 @@ export default function Home() {
                       <p className="text-gray-600 mb-4 line-clamp-3">
                         {getExcerpt(news.deskripsi)}
                       </p>
-                      <Link
-                        href={`/berita/${news.id_berita}`}
-                        className="inline-flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 font-medium group"
+                      <span
+                        className="inline-flex items-center space-x-2 text-emerald-600 group-hover:text-emerald-700 font-medium"
                       >
                         <span>Baca Selengkapnya</span>
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                      </Link>
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

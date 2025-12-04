@@ -226,62 +226,59 @@ export default function StrukturOrganisasi() {
                   Sekretaris Desa
                 </h2>
 
-                <div className="max-w-2xl mx-auto">
-                  <div
-                    className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group hover-lift"
-                    data-aos="zoom-in"
-                    data-aos-duration="600"
-                  >
-                    {sekretarisDesa.foto ? (
-                      <div className="aspect-square relative overflow-hidden">
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${sekretarisDesa.foto}`}
-                          alt={sekretarisDesa.nama}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="aspect-square bg-gradient-to-br from-blue-200 to-purple-200 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
-                          <span className="text-blue-700 font-semibold text-lg">
-                            {sekretarisDesa.nama
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
-                              .slice(0, 2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
-                        {sekretarisDesa.nama}
-                      </h3>
-                      <p className="text-emerald-600 font-semibold mb-3">
-                        {sekretarisDesa.jabatan}
-                      </p>
-                      <p className="text-gray-600 text-sm leading-relaxed mb-2">
-                        Periode: {sekretarisDesa.periode_mulai} - {sekretarisDesa.periode_selesai}
-                      </p>
-                      <p className="text-gray-500 text-xs mb-4">
-                        Status: {sekretarisDesa.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
-                      </p>
-                      <div className="flex space-x-2">
-                        <a
-                          href={`mailto:${sekretarisDesa.email}`}
-                          className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors duration-300"
-                        >
-                          <Mail className="w-4 h-4" />
-                        </a>
-                        <a
-                          href={`tel:${sekretarisDesa.no_telepon}`}
-                          className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-300"
-                        >
-                          <Phone className="w-4 h-4" />
-                        </a>
-                      </div>
+                <div
+                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100 max-w-2xl mx-auto hover-lift"
+                  data-aos="zoom-in"
+                  data-aos-delay="200"
+                  data-aos-duration="800"
+                >
+                  {sekretarisDesa.foto ? (
+                    <div className="w-32 h-32 relative rounded-full mx-auto mb-6 overflow-hidden">
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/aparat/${sekretarisDesa.foto}`}
+                        alt={sekretarisDesa.nama}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
+                  ) : (
+                    <div className="w-32 h-32 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-full mx-auto mb-6 flex items-center justify-center">
+                      <span className="text-blue-700 font-semibold text-lg">
+                        {sekretarisDesa.nama
+                          .split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                    {sekretarisDesa.nama}
+                  </h3>
+                  <p className="text-lg text-blue-600 font-semibold mb-4 text-center">
+                    {sekretarisDesa.jabatan}
+                  </p>
+                  <p className="text-gray-700 leading-relaxed max-w-lg mx-auto mb-2 text-center">
+                    Periode: {sekretarisDesa.periode_mulai} - {sekretarisDesa.periode_selesai}
+                  </p>
+                  <p className="text-gray-600 text-sm mb-6 text-center">
+                    Status: {sekretarisDesa.status === 'aktif' ? 'Aktif' : 'Tidak Aktif'}
+                  </p>
+                  <div className="flex justify-center space-x-4 mt-6">
+                    <a
+                      href={`mailto:${sekretarisDesa.email}`}
+                      className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>Email</span>
+                    </a>
+                    <a
+                      href={`tel:${sekretarisDesa.no_telepon}`}
+                      className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Telepon</span>
+                    </a>
                   </div>
                 </div>
               </div>
