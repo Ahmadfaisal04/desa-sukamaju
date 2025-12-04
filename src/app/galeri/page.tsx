@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Calendar, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Search, X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 export default function GaleriPage() {
   const [gallery, setGallery] = useState<any[]>([]);
@@ -106,6 +106,26 @@ export default function GaleriPage() {
 
   const currentImage = selectedImage ? searchedGallery.find(item => item.id === selectedImage) : null;
 
+  // Fungsi untuk download gambar
+  const downloadImage = async (imageUrl: string, imageName: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${imageName}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      // Fallback: buka gambar di tab baru
+      window.open(imageUrl, '_blank');
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
@@ -205,10 +225,23 @@ export default function GaleriPage() {
                               loading="lazy"
                             />
                           )}
-                          <div className="absolute inset-0 bg-black/0 flex items-center justify-center group-hover:bg-black/10 transition-all duration-300">
+                          <div className="absolute inset-0 bg-black/0 flex items-center justify-center gap-2 group-hover:bg-black/20 transition-all duration-300">
                             <div className="bg-white/90 rounded-full p-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                               <Search className="w-4 h-4 text-emerald-700" />
                             </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                downloadImage(
+                                  `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/uploads/berita/${item.image}`,
+                                  item.title.replace(/[^a-zA-Z0-9]/g, '_')
+                                );
+                              }}
+                              className="bg-white/90 rounded-full p-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-emerald-100"
+                              title="Download gambar"
+                            >
+                              <Download className="w-4 h-4 text-emerald-700" />
+                            </button>
                           </div>
                         </div>
                         <div className="p-3">
@@ -248,7 +281,17 @@ export default function GaleriPage() {
                         className="object-cover w-full h-full"
                       />
                     )}
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                      <button
+                        onClick={() => downloadImage(
+                          `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/uploads/berita/${currentImage.image}`,
+                          currentImage.title.replace(/[^a-zA-Z0-9]/g, '_')
+                        )}
+                        className="bg-black/70 hover:bg-emerald-600 text-white p-2 rounded transition-colors duration-200"
+                        title="Download gambar"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                       <span className="bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
                         {currentImageIndex + 1} / {searchedGallery.length}
                       </span>
@@ -286,9 +329,19 @@ export default function GaleriPage() {
                         {truncateDescription(currentImage.description) || "Tidak ada deskripsi tersedia."}
                       </p>
                       
-                      {/* Tombol Baca Berita di Panel Preview */}
-                      {currentImage.description && currentImage.description.length > 150 && (
-                        <div className="mt-4">
+                      {/* Tombol Aksi di Panel Preview */}
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => downloadImage(
+                            `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/uploads/berita/${currentImage.image}`,
+                            currentImage.title.replace(/[^a-zA-Z0-9]/g, '_')
+                          )}
+                          className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm font-medium"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Gambar
+                        </button>
+                        {currentImage.description && currentImage.description.length > 150 && (
                           <Link 
                             href={`/berita/${currentImage.beritaId}`}
                             className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-200 text-sm font-medium"
@@ -296,8 +349,8 @@ export default function GaleriPage() {
                             Baca Berita Lengkap
                             <ChevronRight className="w-4 h-4" />
                           </Link>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
                     {/* Navigation */}
