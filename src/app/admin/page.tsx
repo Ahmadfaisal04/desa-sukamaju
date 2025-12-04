@@ -83,7 +83,7 @@ export default function AdminDashboard() {
             .sort((a: BeritaData, b: BeritaData) => 
               new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             )
-            .slice(0, 3);
+            .slice(0, 4);
           
           setRecentNews(sortedNews);
 
@@ -104,10 +104,10 @@ export default function AdminDashboard() {
             }
           });
 
-          // Ambil 4 gambar terbaru untuk galeri
+          // Ambil 2 gambar terbaru untuk galeri
           const sortedGallery = galleryItems
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 4);
+            .slice(0, 2);
           
           setRecentGallery(sortedGallery);
         }
